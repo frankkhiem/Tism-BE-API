@@ -21,6 +21,20 @@ const getProfile = async ({ userId }) => {
   }
 };
 
+const updateUsername = async ({ userId, fullname }) => {
+  try {
+    const user = await User.findById(userId);
+    user.fullname = fullname
+    await user.save();
+    return {
+      success: true,
+      message: 'Update user name successfully'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
 const updateDescription = async ({ userId, description }) => {
   try {
     const user = await User.findById(userId);
@@ -40,5 +54,6 @@ const updateDescription = async ({ userId, description }) => {
 
 module.exports = {
   getProfile,
-  updateDescription
+  updateDescription,
+  updateUsername
 };

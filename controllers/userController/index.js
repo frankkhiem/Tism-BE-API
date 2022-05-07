@@ -15,6 +15,22 @@ const getProfile = async (req, res) => {
   }
 };
 
+// [PUT] /user/profile
+const updateUsername = async (req, res) => {
+  try {
+    const fullname = req.body.fullname;
+
+    const userId = req.userId;
+
+    const result = await userService.updateUsername({ userId, fullname });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 // [PATCH] /user/description
 const editUserDescription = async (req, res) => {
   try {
@@ -33,5 +49,6 @@ const editUserDescription = async (req, res) => {
 
 module.exports = {
   getProfile,
-  editUserDescription
+  editUserDescription,
+  updateUsername
 };
