@@ -1,6 +1,6 @@
-const Friendship = required('./friendship');
-const FriendRequest = required('./friend.request');
-const FriendMessage = required('./friend.message');
+const Friendship = require('./friendship');
+const FriendRequest = require('./friend.request');
+const FriendMessage = require('./friend.message');
 
 module.exports = {
   Friendship,

@@ -6,7 +6,6 @@ const cors = require('cors');
 const db = require('./helpers/db');
 const router = require('./routes');
 
-
 const app = express();
 const port = 3000;
 

@@ -6,6 +6,9 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Full name is required"]
   },
+  normalizeName: {
+    type: String
+  },
   email: {
     type: String, 
     unique: true,
@@ -25,7 +28,8 @@ const userSchema = new Schema({
   },
   friends: [{
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    unique: true
   }],
   description: String,
   accessToken: String,
