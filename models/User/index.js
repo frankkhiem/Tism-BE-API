@@ -17,32 +17,6 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Password is required"]
   },
-  friend_relations: [
-    {
-      name: String,
-      email: String
-    }
-  ],
-
-  friend_invites: [
-    {
-      name: String,
-      email: String
-    }
-  ],
-  task_assign:[
-    {
-      task: {
-        name: String,
-        status: String,
-        start_time: Date,
-        end_time: Date,
-        description: String,
-        file: [],
-        comment: []
-      }
-    }
-  ],
   description: String,
   accessToken: String,
   refreshToken: String

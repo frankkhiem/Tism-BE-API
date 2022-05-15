@@ -2,9 +2,15 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const teamSchema = new Schema({
-  name:{
+  admin:{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+
+  teamName:{
     type: String,
-    required: [true, "Full name is required"]
+    required: [true, "Team name is required"]
   },
 
   type: {
@@ -14,12 +20,6 @@ const teamSchema = new Schema({
 
   is_private: {
     type: String,
-    required: true
-  },
-
-  admin:{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
     required: true
   },
   
@@ -37,10 +37,10 @@ const teamSchema = new Schema({
   description: String,
 },
 {
-  collection: 'users',
+  collection: 'teams',
   timestamps: true
 });
 
-const Team = mongoose.model('User', teamSchema);
+const Team = mongoose.model('Team', teamSchema);
 
 module.exports = Team;
