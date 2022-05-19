@@ -2,29 +2,44 @@ const createError = require("http-errors");
 
 const Team = require('../../models/Team');
 const User = require('../../models/User');
-//get team's detail
-const _getTeam = (team) => {
-    return {
-      teamId: team._id,
-      teamName: team.name,
-      type: team.is_private,
-      description: team.description,
-      admin: team.admin,
-      member: team.member,
-      created_date: team.created_date
+
+
+const AllTeam = async ({ user }) => {
+  var allTeam = new Array();
+  const teams = await Team.find({});
+  teams.map(team => {
+    if (team.member.includes(user._id)) {
+      allTeam.push({ teamName: team.teamName, teamId: team._id })
     }
+    console.log(allTeam, "\n")
+  })
+  console.log(allTeam)
+  return allTeam;
+}
+
+////
+const _getTeam = (team) => {
+  return {
+    teamId: team._id,
+    teamName: team.teamName,
+    type: team.is_private,
+    description: team.description,
+    admin: team.admin,
+    member: team.member,
+  }
 };
 
-const getTeam= async ({ teamId }) => {
+//get team's detail
+const getTeam = async ({ teamId }) => {
   try {
     const team = await Team.findById(teamId);
-
     return _getTeam(team);
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }
 };
 
+// create new team
 const createTeam = async ({
   userId,
   teamName,
@@ -32,10 +47,13 @@ const createTeam = async ({
   is_private,
   member,
   description,
-  created_date}) => {
+}) => {
   try {
-    admin = await User.findById(userId);
-    member = admin;
+    _admin = await User.findById(userId);
+    admin = _admin._id
+    temp = [{ admin }]
+    //member = temp
+    //member.concat(admin)
     const newTeam = new Team({
       admin,
       teamName,
@@ -43,10 +61,30 @@ const createTeam = async ({
       is_private,
       member,
       description,
-      created_date
     });
     const team = await newTeam.save();
+    console.log(admin)
     return _getTeam(team);
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
+//update team's detail
+const updateTeam = async ({ teamId, teamName, type, is_private, description }) => {
+  try {
+    const team = await Team.findById(teamId);
+
+    team.teamName = teamName,
+    team.type = type,
+    team.is_private = is_private,
+    team.description = description,
+
+    await team.save();
+    return {
+      success: true,
+      message: 'Update detail of team is successfully'
+    };
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }
@@ -54,6 +92,9 @@ const createTeam = async ({
 
 module.exports = {
   _getTeam,
-  createTeam
+  getTeam,
+  createTeam,
+  AllTeam,
+  updateTeam
 };
 

@@ -3,9 +3,7 @@ const { Schema } = mongoose;
 
 const teamSchema = new Schema({
   admin:{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type:String
   },
 
   teamName:{
@@ -22,17 +20,12 @@ const teamSchema = new Schema({
     type: String,
     required: true
   },
-  
-  member:[
-    {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    }
-  ],
-  created_date: {
-    type: Date,
-    required: true
+
+  avatar:{
+    type: String
   },
+  
+  member:[String],
 
   description: String,
 },
