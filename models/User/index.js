@@ -6,6 +6,9 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Full name is required"]
   },
+  normalizeName: {
+    type: String
+  },
   email: {
     type: String, 
     unique: true,
@@ -17,6 +20,17 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Password is required"]
   },
+  avatar: String,
+  status: {
+    type: String,
+    enum: ['online', 'offline'],
+    default: 'online'
+  },
+  friends: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    unique: true
+  }],
   description: String,
   accessToken: String,
   refreshToken: String

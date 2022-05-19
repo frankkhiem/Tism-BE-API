@@ -1,14 +1,19 @@
 const express = require('express');
+const { createServer } = require("http");
 const dotenv = require('dotenv');
 const path = require('path');
 const cors = require('cors');
 
 const db = require('./helpers/db');
 const router = require('./routes');
-
+const socketServer = require('./helpers/socketServer');
 
 const app = express();
+const httpServer = createServer(app);
 const port = 3000;
+
+// Setup socket.io server
+global.io = socketServer.createSocketServer({ httpServer });
 
 // Config .env
 dotenv.config();
@@ -28,6 +33,6 @@ app.use(cors());
 // Use router
 app.use(router);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+httpServer.listen(port, () => {
+  console.log(`Tism app listening on port ${port}`);
 });

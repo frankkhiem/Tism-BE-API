@@ -12,6 +12,9 @@ router.use(authMiddleware.checkAuth);
 // API get user profile
 router.get('/profile', userController.getProfile);
 
+// API edit user avatar
+router.patch('/avatar', userValidations.editUserAvatar, userController.editUserAvatar);
+
 // API edit user desciption
 router.patch('/description', userValidations.editUserDescription, userController.editUserDescription);
 
