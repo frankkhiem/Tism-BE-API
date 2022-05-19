@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const friendMessageSchema = new Schema({
-  Channel: {
+  friendship: {
     type: Schema.Types.ObjectId,
     ref: 'Friendship'
   },
@@ -22,7 +22,7 @@ const friendMessageSchema = new Schema({
   content: String
 },
 {
-  collection: 'friendships',
+  collection: 'friend_messages',
   timestamps: true
 });
 

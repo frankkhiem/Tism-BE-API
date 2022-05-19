@@ -9,7 +9,10 @@ const _getBasicDetailUser = (user) => {
     email: user.email,
     avatar: user.avatar,
     status: user.status,
-    description: user.description
+    description: user.description,
+    countFriends: user.friends.length,
+    createdAt: user.createdAt.toLocaleDateString('en-GB'),
+    lastUpdatedAt: user.updatedAt.toLocaleDateString('en-GB')
   }
 };
 

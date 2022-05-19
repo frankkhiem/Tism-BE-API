@@ -6,10 +6,18 @@ const friendshipSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   },
+  firstPersonSeen: {
+    type: Boolean,
+    default: false
+  },
   secondPerson: {
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  secondPersonSeen: {
+    type: Boolean,
+    default: false
+  },
 },
 {
   collection: 'friendships',
