@@ -1,7 +1,8 @@
 const express = require('express');
+const { validate } = require('express-validation');
 
 const authMiddleware = require('../../middlewares/auth/auth.middleware');
-// const friendValidation = require('../../middlewares/validations/friend.validation');
+const conversationValidation = require('../../middlewares/validations/conversation.validation');
 const conversationController = require('../../controllers/conversationController');
 
 const router = express.Router();
@@ -13,12 +14,12 @@ router.use(authMiddleware.checkAuth);
 router.get('/', conversationController.getListConversations);
 
 // API get a conversation information
-router.get('/:conversationId', conversationController.getConversation);
+router.get('/:conversationId', validate(conversationValidation.getConversation), conversationController.getConversation);
 
 // API send a text message to conversation
-router.post('/:conversationId/text-message', conversationController.sendTextMessage);
+router.post('/:conversationId/text-message', validate(conversationValidation.sendTextMessage), conversationController.sendTextMessage);
 
 // API mark seen tag for conversation
-router.patch('/:conversationId/seen', conversationController.seenConversation);
+router.patch('/:conversationId/seen', validate(conversationValidation.seenConversation), conversationController.seenConversation);
 
 module.exports = router;
