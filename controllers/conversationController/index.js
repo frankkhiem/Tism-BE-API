@@ -51,6 +51,44 @@ const sendTextMessage = async (req, res) => {
   }
 };
 
+// [POST] /conversations/:conversationId/image-message
+const sendImageMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { conversationId } = req.params;
+    const image = req.file;
+
+    const result = await conversationService.sendImageMessage({ userId, conversationId, image });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+// [POST] /conversations/:conversationId/file-message
+const sendFileMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { conversationId } = req.params;
+    const file = req.file;
+
+    const result = await conversationService.sendFileMessage({ userId, conversationId, file });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 // [PATCH] /conversations/:conversationId/seen
 const seenConversation = async (req, res) => {
   try {
@@ -73,5 +111,7 @@ module.exports = {
   getListConversations,
   getConversation,
   sendTextMessage,
+  sendImageMessage,
+  sendFileMessage,
   seenConversation
 }
