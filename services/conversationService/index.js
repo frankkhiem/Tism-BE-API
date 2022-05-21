@@ -115,9 +115,12 @@ const getConversation = async ({ userId, conversationId }) => {
       const friendStatus = friend.status;
       const friendAvatar = friend.avatar;
 
-      const messages = await FriendMessage.find({
+      const totalMessages = await FriendMessage.countDocuments({
         friendship: conversationId
       });
+      const messages = await FriendMessage.find({
+        friendship: conversationId
+      }).limit(10).sort({ createdAt: -1 });
 
       return {
         success: true,
@@ -127,7 +130,8 @@ const getConversation = async ({ userId, conversationId }) => {
           friendFullName,
           friendStatus,
           friendAvatar,
-          messages
+          totalMessages,
+          messages: messages.reverse()
         }
       };
     }
@@ -374,11 +378,46 @@ const seenConversation = async ({ userId, conversationId }) =>  {
   }
 };
 
+const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      const messages = await FriendMessage.find({
+        friendship: conversationId
+      }).limit(take).skip(skip).sort({ createdAt: -1 });
+
+      return {
+        success: true,
+        messages: messages.reverse()
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Get list recent messages in Conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
   sendTextMessage,
   sendImageMessage,
   sendFileMessage,
-  seenConversation
+  seenConversation,
+  getRecentMessages
 }

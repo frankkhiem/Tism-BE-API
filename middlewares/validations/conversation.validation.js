@@ -1,4 +1,4 @@
-const { Joi } = require('express-validation')
+const { Joi } = require('express-validation');
 
 const getConversation = {
   params: Joi.object({
@@ -19,10 +19,21 @@ const seenConversation = {
   params: Joi.object({
     conversationId: Joi.string().required()
   })
-}
+};
+
+const getRecentMessages = {
+  params: Joi.object({
+    conversationId: Joi.string().required()
+  }),
+  query: Joi.object({
+    skip: Joi.number().required(),
+    take: Joi.number().required()
+  })
+};
 
 module.exports = {
   getConversation,
   sendTextMessage,
-  seenConversation
-}
+  seenConversation,
+  getRecentMessages
+};

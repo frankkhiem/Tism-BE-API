@@ -107,11 +107,31 @@ const seenConversation = async (req, res) => {
   }
 }
 
+// [GET] /conversations/:conversationId/messages
+const getRecentMessages = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { conversationId } = req.params;
+    const { skip, take } = req.query;
+
+    const result = await conversationService.getRecentMessages({ userId, conversationId, skip, take });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
   sendTextMessage,
   sendImageMessage,
   sendFileMessage,
-  seenConversation
+  seenConversation,
+  getRecentMessages
 }

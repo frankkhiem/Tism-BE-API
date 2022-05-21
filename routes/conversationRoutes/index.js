@@ -58,4 +58,11 @@ router.patch(
   conversationController.seenConversation
 );
 
+// API mark seen tag for conversation
+router.get(
+  '/:conversationId/messages', 
+  validate(conversationValidation.getRecentMessages),
+  conversationController.getRecentMessages
+);
+
 module.exports = router;
