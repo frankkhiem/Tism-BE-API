@@ -7,7 +7,12 @@ const _getBasicDetailUser = (user) => {
     userId: user._id,
     fullname: user.fullname,
     email: user.email,
-    description: user.description
+    avatar: user.avatar,
+    status: user.status,
+    description: user.description,
+    countFriends: user.friends.length,
+    createdAt: user.createdAt.toLocaleDateString('en-GB'),
+    lastUpdatedAt: user.updatedAt.toLocaleDateString('en-GB')
   }
 };
 
@@ -29,6 +34,24 @@ const updateUsername = async ({ userId, fullname }) => {
     return {
       success: true,
       message: 'Update user name successfully'
+    }
+  }
+    catch (error) {
+      throw createError(error.statusCode || 500, error.message);
+    }
+}
+
+const updateAvatar = async ({ userId, avatar }) => {
+  try {
+    const user = await User.findById(userId);
+
+    user.avatar = avatar;
+
+    await user.save();
+
+    return {
+      success: true,
+      message: 'Update user avatar successfully'
     };
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
@@ -55,5 +78,7 @@ const updateDescription = async ({ userId, description }) => {
 module.exports = {
   getProfile,
   updateDescription,
-  updateUsername
+  updateUsername,
+  updateAvatar,
+  updateDescription
 };

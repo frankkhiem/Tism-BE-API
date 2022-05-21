@@ -1,4 +1,3 @@
-const { response } = require('express');
 const userService = require('../../services/userService');
 
 // [GET] /user/profile
@@ -23,6 +22,19 @@ const updateUsername = async (req, res) => {
     const userId = req.userId;
 
     const result = await userService.updateUsername({ userId, fullname });
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+}
+// [PATCH] /user/avatar
+const editUserAvatar = async (req, res) => {
+  try {
+    const { avatar } = req.body;
+
+    const userId = req.userId;
+
+    const result = await userService.updateAvatar({ userId, avatar });
 
     res.status(200).json(result);
   } catch (error) {
@@ -50,5 +62,7 @@ const editUserDescription = async (req, res) => {
 module.exports = {
   getProfile,
   editUserDescription,
-  updateUsername
+  updateUsername,
+  editUserAvatar,
+  editUserDescription
 };

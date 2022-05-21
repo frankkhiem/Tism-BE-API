@@ -6,7 +6,7 @@ const getAllTeam = async (req, res) => {
   try {
     const userId = req.userId;
     const user = await User.findById(userId);
-    const result = await teamService.AllTeam({ 
+    const result = await teamService.getAllTeam({ 
       user
      });
 
@@ -75,7 +75,23 @@ const updateTeamDetail = async (req, res) => {
     res.json(error);
   }
 };
+//remove team
+const removeTeam = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { userId } = req.userId;
+    const result = await teamService.removeTeam({ teamId, userId });
 
+    if( result.success ) {
+      return res.status(200).json(result);
+    } 
+
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
 module.exports = {
   getTeam,
   createTeam,

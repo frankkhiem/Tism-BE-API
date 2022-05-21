@@ -11,6 +11,8 @@ router.get('/getteam/:id', teamController.getTeam);
 router.post('/newteam', teamController.createTeam);
 //[GET] get user's all team
 router.get('/getallteam', teamController.getAllTeam);
+//[DELETE] remove team 
+router.delete('/:teamId/removeteam', teamController.removeTeam);
 //[PUT] update team's detail
 router.put('/updateteam', teamController.updateTeamDetail);
 module.exports = router;

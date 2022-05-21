@@ -4,7 +4,7 @@ const Team = require('../../models/Team');
 const User = require('../../models/User');
 
 
-const AllTeam = async ({ user }) => {
+const getAllTeam = async ({ user }) => {
   var allTeam = new Array();
   const teams = await Team.find({});
   teams.map(team => {
@@ -76,11 +76,11 @@ const updateTeam = async ({ teamId, teamName, type, is_private, description }) =
     const team = await Team.findById(teamId);
 
     team.teamName = teamName,
-    team.type = type,
-    team.is_private = is_private,
-    team.description = description,
+      team.type = type,
+      team.is_private = is_private,
+      team.description = description,
 
-    await team.save();
+      await team.save();
     return {
       success: true,
       message: 'Update detail of team is successfully'
@@ -90,11 +90,14 @@ const updateTeam = async ({ teamId, teamName, type, is_private, description }) =
   }
 };
 
+const removeTeam = async ({ teamId, userId }) => {
+}
 module.exports = {
   _getTeam,
   getTeam,
   createTeam,
-  AllTeam,
-  updateTeam
+  getAllTeam,
+  updateTeam,
+  removeTeam
 };
 

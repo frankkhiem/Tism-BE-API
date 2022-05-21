@@ -4,12 +4,15 @@ const axios = require('axios');
 const User = require('../../models/User');
 const bcryptHelper = require('../../helpers/bcrypt');
 const jwtHelpter = require('../../helpers/jwt');
+const convertVie = require('../../helpers/convertVie');
 
 const _getBasicDetailUser = (user) => {
   return {
     userId: user._id,
     fullname: user.fullname,
     email: user.email,
+    avatar: user.avatar,
+    status: user.status,
     description: user.description
   }
 };
@@ -64,8 +67,10 @@ const register = async ({
 
     const hassPassword = await bcryptHelper.hashPassword(password);
 
+    fullname = fullname.trim();
     let newUser = new User({
       fullname,
+      normalizeName: convertVie(fullname),
       email,
       password: hassPassword
     });
@@ -80,11 +85,12 @@ const register = async ({
     newUser.accessToken = accessToken;
     newUser.refreshToken = refreshToken;
 
-    const userContacts = await axios.post(`${process.env.ZATO_MODULE_SERVER}/user-contacts`, {
-      userId: newUser._id
-    });
+    // const userContacts = await axios.post(`${process.env.ZATO_MODULE_SERVER}/user-contacts`, {
+    //   userId: newUser._id
+    // });
 
-    if( userContacts.data.success ) await newUser.save();
+    // if( userContacts.data.success ) await newUser.save();
+    await newUser.save();
 
     return {
       user: _getBasicDetailUser(newUser),

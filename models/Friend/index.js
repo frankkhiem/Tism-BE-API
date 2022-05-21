@@ -37,3 +37,12 @@ const friendSchema = new Schema({
 const Friend = mongoose.model('Friend', friendSchema);
 
 module.exports = Friend;
+const Friendship = require('./friendship');
+const FriendRequest = require('./friend.request');
+const FriendMessage = require('./friend.message');
+
+module.exports = {
+  Friendship,
+  FriendRequest,
+  FriendMessage
+};
