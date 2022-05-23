@@ -40,6 +40,12 @@ const createSocketServer = ({
       await user.save();
     }
 
+    const friendsRoom = user.friends.map(id => id.toString());
+    if( friendsRoom.length > 0 ) {
+      // emit friend-online event to all friends of the user
+      socket.to(friendsRoom).emit('friend-online', { id: user._id })
+    }
+
     // change user status to 'offline' when all socket for userId disconnected
     socket.on("disconnect", async () => {
       console.log('socket client disconnected: ' + socket.id);
@@ -49,6 +55,11 @@ const createSocketServer = ({
         // update the user status
         user.status = 'offline';
         await user.save();
+      }
+      const friendsRoom = user.friends.map(id => id.toString());
+      if( friendsRoom.length > 0 ) {
+        // emit friend-offline event to all friends of the user
+        socket.to(friendsRoom).emit('friend-offline', { id: user._id });
       }
     });
   });

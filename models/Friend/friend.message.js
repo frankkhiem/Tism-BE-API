@@ -19,7 +19,8 @@ const friendMessageSchema = new Schema({
     enum: ['text', 'image', 'file'],
     default: 'text'
   },
-  content: String
+  content: String,
+  description: String
 },
 {
   collection: 'friend_messages',

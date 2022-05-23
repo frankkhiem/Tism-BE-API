@@ -38,9 +38,9 @@ router.post('/socket/test', (req, res) => {
   });
 });
 
-// Response not found with url not match
+// Response not found with urls not match
 router.use('/*', (req, res, next) => {
-  res.status(400).json({
+  res.status(404).json({
     message: 'No service provided for this Endpoint'
   });
 });
