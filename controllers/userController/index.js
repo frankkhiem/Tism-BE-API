@@ -30,6 +30,21 @@ const editUserAvatar = async (req, res) => {
   }
 };
 
+// [POST] /user/avatar/upload
+const uploadUserAvatar = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const avatar = req.file;
+
+    const result = await userService.uploadAvatar({ userId, avatar });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 // [PATCH] /user/description
 const editUserDescription = async (req, res) => {
   try {
@@ -49,5 +64,6 @@ const editUserDescription = async (req, res) => {
 module.exports = {
   getProfile,
   editUserAvatar,
+  uploadUserAvatar,
   editUserDescription
 };

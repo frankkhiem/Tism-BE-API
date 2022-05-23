@@ -265,6 +265,7 @@ const sendImageMessage = async ({ userId, conversationId, image }) => {
       message: 'Send message to Conversation failed!'
     };
   } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
   }
 };
 
@@ -337,6 +338,7 @@ const sendFileMessage = async ({ userId, conversationId, file }) => {
       message: 'Send message to Conversation failed!'
     };
   } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
   }
 };
 

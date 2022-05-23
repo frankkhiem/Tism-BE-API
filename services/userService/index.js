@@ -1,6 +1,8 @@
 const createError = require("http-errors");
 
 const User = require('../../models/User');
+const fs = require('fs');
+const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
 const _getBasicDetailUser = (user) => {
   return {
@@ -60,8 +62,30 @@ const updateDescription = async ({ userId, description }) => {
   }
 };
 
+const uploadAvatar = async ({ userId, avatar }) => {
+  try {
+    const uploadUrls = await uploadToFirebase(
+      avatar.path, 
+      `uploads/usersProfile/avatars/${userId}`,
+      avatar.filename
+    );
+    
+    return await updateAvatar({ userId, avatar: uploadUrls.url });
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  } finally {
+    // Xóa file ở tmp/ cả khi thành công hoặc không thành công
+    fs.unlink(avatar.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   updateAvatar,
-  updateDescription
+  updateDescription,
+  uploadAvatar
 };
