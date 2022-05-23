@@ -126,6 +126,24 @@ const getRecentMessages = async (req, res) => {
   }
 };
 
+// [DELETE] /conversations/:conversationId/messages/:messageId
+const deleteMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { conversationId, messageId } = req.params;
+
+    const result = await conversationService.deleteMessage({ userId, conversationId, messageId });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
@@ -133,5 +151,6 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   seenConversation,
-  getRecentMessages
+  getRecentMessages,
+  deleteMessage
 }

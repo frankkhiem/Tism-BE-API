@@ -65,4 +65,11 @@ router.get(
   conversationController.getRecentMessages
 );
 
+// API mark seen tag for conversation
+router.delete(
+  '/:conversationId/messages/:messageId',
+  validate(conversationValidation.deleteMessage),
+  conversationController.deleteMessage
+);
+
 module.exports = router;

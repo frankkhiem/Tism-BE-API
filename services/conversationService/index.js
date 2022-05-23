@@ -414,6 +414,32 @@ const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
   }
 };
 
+const deleteMessage = async ({ userId, conversationId, messageId }) => {
+  try {
+    const deletedMessage = await FriendMessage.findOneAndDelete({
+      _id: messageId,
+      friendship: conversationId,
+      from: userId
+    });
+
+    if( deletedMessage ) {
+      io.to(deletedMessage.to.toString()).emit('deleted-message', deletedMessage);
+      
+      return {
+        success: true,
+        deletedMessage
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Delete message failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
@@ -421,5 +447,6 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   seenConversation,
-  getRecentMessages
+  getRecentMessages,
+  deleteMessage
 }
