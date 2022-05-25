@@ -8,7 +8,7 @@ const teamSchema = new Schema({
 
   teamName:{
     type: String,
-    required: [true, "Team name is required"]
+    required: true
   },
 
   type: {
@@ -24,8 +24,10 @@ const teamSchema = new Schema({
   avatar:{
     type: String
   },
+
+  invites: [String],
   
-  member:[String],
+  member: [String],
 
   description: String,
 },

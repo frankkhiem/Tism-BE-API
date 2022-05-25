@@ -15,4 +15,10 @@ router.get('/getallteam', teamController.getAllTeam);
 router.delete('/:teamId/removeteam', teamController.removeTeam);
 //[PUT] update team's detail
 router.put('/updateteam', teamController.updateTeamDetail);
+//[GET] get user's all invite from team
+router.get('/getallinvite', teamController.getAllInvite);
+//[PATCH] resqponse for an invite
+router.patch('/responseinvite',teamController.responseForInvite);
+//[POST] create team's invite to anyone 
+router.post('/invitetopeople',teamController.addMoreInvite);
 module.exports = router;
