@@ -11,7 +11,7 @@ const getAllTeam = async ({ user }) => {
   const teams = await Team.find({});
   teams.map(team => {
     if (team.member.includes(user._id)) {
-      allTeam.push({ teamName: team.teamName, teamId: team._id })
+      allTeam.push({ teamName: team.teamName, teamId: team._id, type: team.type, avatar: team.avatar })
     }
   })
   return allTeam;
@@ -24,9 +24,10 @@ const _getTeam = (team) => {
     teamName: team.teamName,
     type: team.type,
     is_private: team.is_private,
-    description: team.description,
+    avatar: team.avatar,
+    //description: team.description,
     admin: team.admin,
-    invites: team.invites,
+    //invites: team.invites,
     member: team.member,
 
   }
@@ -50,11 +51,11 @@ const createTeam = async ({
   is_private,
   avatar,
   member,
-  invites,
-  description,
+  //invites,
+  //description,
 }) => {
   try {
-    const _invites = await transformInvite({inviteeArray: invites})
+    //const _invites = await transformInvite({inviteeArray: invites})
     //_admin = await User.findById(userId);
     admin = userId.toString();
     const newTeam = new Team({
@@ -64,12 +65,13 @@ const createTeam = async ({
       is_private,
       avatar,
       member,
-      invites: _invites,
-      description,
+      //invites: _invites,
+      //description,
     });
     const team = await newTeam.save();
     //console.log(team._id,team.invites)
-    await inviteToAnyOne({ teamId: team._id, inviterId: team.admin, inviteeArray: _invites })
+    // if(inviteeArray == null) 
+    // await inviteToAnyOne({ teamId: team._id, inviterId: team.admin, inviteeArray: _invites })
 
     return _getTeam(team);
   } catch (error) {
@@ -78,14 +80,14 @@ const createTeam = async ({
 };
 
 //update team's detail
-const updateTeam = async ({ teamId, teamName, type, is_private, description }) => {
+const updateTeam = async ({ teamId, teamName, type, is_private, avatar }) => {
   try {
     const team = await Team.findById(teamId);
 
     team.teamName = teamName,
       team.type = type,
       team.is_private = is_private,
-      team.description = description,
+      team.avatar = avatar,
       await team.save();
     return {
       success: true,
@@ -195,6 +197,7 @@ const addMoreInvite = async ({ teamId, userId, inviteeArray }) => {
 //invite to others
 const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
   try {
+    if(inviteeArray === null) return
     const team = await Team.findById(teamId)
     if (team.admin != userId) return "no permission"
     for (let i = 0; i < inviteeArray.length; i++) {
@@ -214,6 +217,7 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
 //transform from mail to id of user
 const transformInvite = async ({ inviteeArray }) => {
   try {
+    if(inviteeArray === null) return
     let temp = new Array()
     for (let i = 0; i < inviteeArray.length; i++) {
       var user = await User.findOne({ 'email': inviteeArray[i]})

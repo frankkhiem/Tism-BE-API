@@ -18,7 +18,6 @@ const teamSchema = new Schema({
 
   is_private: {
     type: String,
-    required: true
   },
 
   avatar:{

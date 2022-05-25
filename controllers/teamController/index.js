@@ -44,9 +44,9 @@ const createTeam = async (req, res) => {
     //temp.push(userId);
     const member = new Array();
     member.push(userId)
-    const invites = req.body.invites;
+    //const invites = req.body.invites;
 
-    const description = req.body.description;
+    //const description = req.body.description;
     const result = await teamService.createTeam({
       userId,
       //admin,
@@ -55,8 +55,8 @@ const createTeam = async (req, res) => {
       is_private,
       avatar,
       member,
-      invites,
-      description,
+      //invites,
+      //description,
     });
     res.status(200).json(result);
   } catch (error) {
@@ -72,8 +72,8 @@ const updateTeamDetail = async (req, res) => {
     const teamName = req.body.teamName;
     const type = req.body.type;
     const is_private = req.body.is_private;
-    const description = req.body.description;
-    const result = await teamService.updateTeam({ teamId, teamName, type, is_private, description });
+    const avatar = req.body.avatar;
+    const result = await teamService.updateTeam({ teamId, teamName, type, is_private, avatar });
 
     res.status(200).json(result);
   } catch (error) {
