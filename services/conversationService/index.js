@@ -50,6 +50,8 @@ const getListConversations = async ({ userId }) => {
           lastMessage.content = 'Ảnh gửi lên.';
         } else if( lastFriendMessage.type === 'file' ) {
           lastMessage.content = 'Tệp đính kèm.';
+        } else if( lastFriendMessage.type === 'video-call' ) {
+          lastMessage.content = 'Cuộc gọi Video.';
         } else {
           lastMessage.content = lastFriendMessage.content
         }
