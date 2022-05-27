@@ -382,6 +382,44 @@ const seenConversation = async ({ userId, conversationId }) =>  {
   }
 };
 
+const unseenConversation = async ({ userId, conversationId }) =>  {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      if( conversation.firstPerson.equals(userId) ) {
+        conversation.firstPersonSeen = false;
+      } else {
+        conversation.secondPersonSeen = false;
+      }
+
+      await conversation.save();
+
+      return {
+        success: true,
+        message: 'Mark unseen tag for conversation successfully'
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Mark unseen tag for conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
   try {
     const conversation = await Friendship.findOne({
@@ -449,6 +487,7 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   seenConversation,
+  unseenConversation,
   getRecentMessages,
   deleteMessage
 }

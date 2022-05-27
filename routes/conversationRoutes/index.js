@@ -58,14 +58,21 @@ router.patch(
   conversationController.seenConversation
 );
 
-// API mark seen tag for conversation
+// API mark unseen tag for conversation
+router.patch(
+  '/:conversationId/unseen', 
+  validate(conversationValidation.seenConversation), 
+  conversationController.unseenConversation
+);
+
+// API get { take, skip } recent messages
 router.get(
   '/:conversationId/messages', 
   validate(conversationValidation.getRecentMessages),
   conversationController.getRecentMessages
 );
 
-// API mark seen tag for conversation
+// API delete messages by id
 router.delete(
   '/:conversationId/messages/:messageId',
   validate(conversationValidation.deleteMessage),

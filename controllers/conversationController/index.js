@@ -107,6 +107,24 @@ const seenConversation = async (req, res) => {
   }
 }
 
+// [PATCH] /conversations/:conversationId/seen
+const unseenConversation = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { conversationId } = req.params;
+
+    const result = await conversationService.unseenConversation({ userId, conversationId });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+}
+
 // [GET] /conversations/:conversationId/messages
 const getRecentMessages = async (req, res) => {
   try {
@@ -151,6 +169,7 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   seenConversation,
+  unseenConversation,
   getRecentMessages,
   deleteMessage
 }

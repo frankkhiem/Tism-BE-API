@@ -3,18 +3,21 @@ const { createServer } = require("http");
 const dotenv = require('dotenv');
 const path = require('path');
 const cors = require('cors');
-const { ValidationError} = require('express-validation');
 
 const db = require('./helpers/db');
 const router = require('./routes');
-const socketServer = require('./helpers/socketServer');
+const { createSocketServer } = require('./helpers/socketServer');
+const { createPeerServer } = require('./helpers/peerServer');
 
 const app = express();
 const httpServer = createServer(app);
 const port = 3000;
 
 // Setup socket.io server
-global.io = socketServer.createSocketServer({ httpServer });
+global.io = createSocketServer({ httpServer });
+
+// Setup peerjs server
+createPeerServer();
 
 // Config .env
 dotenv.config();

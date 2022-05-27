@@ -235,4 +235,4 @@ const createSocketServer = ({
 
 module.exports = {
   createSocketServer
-}
+};
