@@ -5,6 +5,7 @@ const userRouter = require('./userRoutes');
 const teamRouter = require('./teamRoutes');
 const friendRouter = require('./friendRoutes');
 const conversationRouter = require('./conversationRoutes');
+const notificationRouter = require('./notificationRoutes');
 
 const router = express.Router();
 
@@ -25,7 +26,8 @@ router.use('/user', userRouter);
 router.use('/team', teamRouter);
 // Routes for friend
 router.use('/friends', friendRouter);
-
+// Routes for notification
+router.use('/notification', notificationRouter);
 // Routes for friend conversations
 router.use('/conversations', conversationRouter);
 

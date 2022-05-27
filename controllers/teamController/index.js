@@ -68,12 +68,13 @@ const createTeam = async (req, res) => {
 ///
 const updateTeamDetail = async (req, res) => {
   try {
+    const userId = req.userId;
     const teamId = req.body.teamId;
     const teamName = req.body.teamName;
     const type = req.body.type;
     const is_private = req.body.is_private;
     const avatar = req.body.avatar;
-    const result = await teamService.updateTeam({ teamId, teamName, type, is_private, avatar });
+    const result = await teamService.updateTeam({ userId, teamId, teamName, type, is_private, avatar });
 
     res.status(200).json(result);
   } catch (error) {

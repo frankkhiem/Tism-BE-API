@@ -4,7 +4,7 @@ const { translateAliases } = require("../../models/User");
 const Team = require('../../models/Team');
 const User = require('../../models/User');
 const teamRequest = require('../../models/Team/team_request');
-
+const Notification = require('../../models/notification');
 
 const getAllTeam = async ({ user }) => {
   var allTeam = new Array();
@@ -27,7 +27,7 @@ const _getTeam = (team) => {
     avatar: team.avatar,
     //description: team.description,
     admin: team.admin,
-    //invites: team.invites,
+    invites: team.invites,
     member: team.member,
 
   }
@@ -80,8 +80,9 @@ const createTeam = async ({
 };
 
 //update team's detail
-const updateTeam = async ({ teamId, teamName, type, is_private, avatar }) => {
+const updateTeam = async ({ userId, teamId, teamName, type, is_private, avatar }) => {
   try {
+    if (!await isAdmin({ teamId, userId })) return { status: 'not have permission' }
     const team = await Team.findById(teamId);
 
     team.teamName = teamName,
@@ -101,7 +102,7 @@ const updateTeam = async ({ teamId, teamName, type, is_private, avatar }) => {
 // is Team's Admin 
 const isAdmin = async ({ teamId, userId }) => {
   const team = await Team.findById(teamId)
-  console.log(team.admin, userId)
+  if(team === null) return 0
   return team.admin == userId
 }
 
@@ -115,7 +116,7 @@ const removeTeam = async ({ teamId, userId }) => {
         message: 'Remove team is successfully'
       };
     }
-    return { status: 'not have permission' }
+    return { status: 'not have permission or not exist team' }
   }
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
@@ -162,7 +163,10 @@ const responseForInvite = async ({ userId, inviteId, accept }) => {
     invite.accept = accept
     if (invite.accept == 'true') await ToMember({ teamId: invite.team, userId })
     await invite.save()
-    return invite
+    return {
+      success: true,
+      message: 'response is success'
+    }
   }
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
@@ -184,11 +188,14 @@ const ToMember = async ({ teamId, userId }) => {
 
 const addMoreInvite = async ({ teamId, userId, inviteeArray }) => {
   try {
+    if (!await isAdmin({ teamId, userId })) return { status: 'not have permission' }
     const _invites = await transformInvite({ inviteeArray })
-    console.log(_invites)
     await inviteToAnyOne({ teamId, userId, inviteeArray: _invites })
     const team = await Team.findById(teamId)
-    return _getTeam(team);
+    return {
+      success: true,
+      message: 'Invite is sent'
+    }//_getTeam(team);
   }
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
@@ -197,13 +204,14 @@ const addMoreInvite = async ({ teamId, userId, inviteeArray }) => {
 //invite to others
 const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
   try {
-    if(inviteeArray === null) return
+    if (inviteeArray === null) return
     const team = await Team.findById(teamId)
     if (team.admin != userId) return "no permission"
     for (let i = 0; i < inviteeArray.length; i++) {
       if (!(team.member.includes(inviteeArray[i]) || (team.invites.includes(inviteeArray[i])))) {
         team.invites.push(inviteeArray[i])
         await inviteMember({ teamId, userId, inviteeId: inviteeArray[i] })
+        await Notification.create({title: team.name, content:"no msg", owner: userId, type_of_notification:{type:"Team Invite", teamId: teamId}})
       }
     }
     const newTeam = team.save()

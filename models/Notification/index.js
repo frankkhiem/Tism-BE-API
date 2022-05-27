@@ -4,15 +4,21 @@ const { Schema } = mongoose;
 const notificationSchema = new Schema({
     title: String,
     content: String,
-    owner:{
+    owner: {
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    type_notification: {
+        type_of_notification: String,
+        teamId: Schema.Types.ObjectId,
+        friendId: Schema.Types.ObjectId
+    },
+
 },
-{
-    collection: 'team_chat',
-    timestamps: true
-});
+    {
+        collection: 'notifications',
+        timestamps: true
+    });
 
 const Notification = mongoose.model('notification', notificationSchema);
 
