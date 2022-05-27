@@ -50,6 +50,8 @@ const getListConversations = async ({ userId }) => {
           lastMessage.content = 'Ảnh gửi lên.';
         } else if( lastFriendMessage.type === 'file' ) {
           lastMessage.content = 'Tệp đính kèm.';
+        } else if( lastFriendMessage.type === 'video-call' ) {
+          lastMessage.content = 'Cuộc gọi Video.';
         } else {
           lastMessage.content = lastFriendMessage.content
         }
@@ -380,6 +382,44 @@ const seenConversation = async ({ userId, conversationId }) =>  {
   }
 };
 
+const unseenConversation = async ({ userId, conversationId }) =>  {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      if( conversation.firstPerson.equals(userId) ) {
+        conversation.firstPersonSeen = false;
+      } else {
+        conversation.secondPersonSeen = false;
+      }
+
+      await conversation.save();
+
+      return {
+        success: true,
+        message: 'Mark unseen tag for conversation successfully'
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Mark unseen tag for conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
   try {
     const conversation = await Friendship.findOne({
@@ -414,6 +454,32 @@ const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
   }
 };
 
+const deleteMessage = async ({ userId, conversationId, messageId }) => {
+  try {
+    const deletedMessage = await FriendMessage.findOneAndDelete({
+      _id: messageId,
+      friendship: conversationId,
+      from: userId
+    });
+
+    if( deletedMessage ) {
+      io.to(deletedMessage.to.toString()).emit('deleted-message', deletedMessage);
+      
+      return {
+        success: true,
+        deletedMessage
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Delete message failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
@@ -421,5 +487,7 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   seenConversation,
-  getRecentMessages
+  unseenConversation,
+  getRecentMessages,
+  deleteMessage
 }

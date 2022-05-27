@@ -18,6 +18,15 @@ router.use(authMiddleware.checkAuth);
 // API get user profile
 router.get('/profile', userController.getProfile);
 
+// API get user status
+router.get('/status', userController.getUserStatus);
+
+// API get person status
+router.get('/:personId/status', userController.getPersonStatus);
+
+// API edit user status
+router.patch('/status', userController.editUserStatus);
+
 // API edit user avatar
 router.patch('/avatar', userValidations.editUserAvatar, userController.editUserAvatar);
 

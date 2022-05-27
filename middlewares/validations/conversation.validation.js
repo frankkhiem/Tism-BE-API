@@ -31,9 +31,17 @@ const getRecentMessages = {
   })
 };
 
+const deleteMessage = {
+  params: Joi.object({
+    conversationId: Joi.string().required(),
+    messageId: Joi.string().required()
+  })
+};
+
 module.exports = {
   getConversation,
   sendTextMessage,
   seenConversation,
-  getRecentMessages
+  getRecentMessages,
+  deleteMessage
 };
