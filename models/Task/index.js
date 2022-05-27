@@ -53,9 +53,6 @@ const taskSchema = new Schema({
     }],
 
     description: String,
-}, {
-    collection: 'users',
-    timestamps: true
 });
 
 const Task = mongoose.model('Task', taskSchema);
