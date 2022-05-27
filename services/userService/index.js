@@ -28,6 +28,33 @@ const getProfile = async ({ userId }) => {
   }
 };
 
+const getUserStatus = async ({ userId }) => {
+  try {
+    const user = await User.findById(userId);
+
+    return { status: user.status };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
+const updateStatus = async ({ userId, status }) => {
+  try {
+    const user = await User.findById(userId);
+
+    user.status = status;
+
+    await user.save();
+
+    return {
+      success: true,
+      message: 'Update user status successfully'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
 const updateAvatar = async ({ userId, avatar }) => {
   try {
     const user = await User.findById(userId);
@@ -85,6 +112,8 @@ const uploadAvatar = async ({ userId, avatar }) => {
 
 module.exports = {
   getProfile,
+  getUserStatus,
+  updateStatus,
   updateAvatar,
   updateDescription,
   uploadAvatar

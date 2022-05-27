@@ -23,7 +23,7 @@ const userSchema = new Schema({
   avatar: String,
   status: {
     type: String,
-    enum: ['online', 'offline'],
+    enum: ['online', 'offline', 'busy'],
     default: 'offline'
   },
   friends: [{
