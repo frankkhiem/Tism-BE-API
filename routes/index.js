@@ -31,8 +31,10 @@ router.use('/task', taskRouter);
 
 // Routes for friend
 router.use('/friends', friendRouter);
+
 // Routes for notification
 router.use('/notification', notificationRouter);
+
 // Routes for friend conversations
 router.use('/conversations', conversationRouter);
 

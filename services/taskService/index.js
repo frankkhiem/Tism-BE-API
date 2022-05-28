@@ -56,7 +56,7 @@ const createTask = async({
 };
 
 //update team's detail
-const updateTask = async({ taskId, taskName, taskType, startTime, endTime, executorId }) => {
+const updateTask = async ({ taskId, taskName, taskType, startTime, endTime, executorId }) => {
     try {
         let task = await Task.findById(taskId);
 

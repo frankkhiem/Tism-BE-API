@@ -102,7 +102,7 @@ const updateTeam = async ({ userId, teamId, teamName, type, is_private, avatar }
 // is Team's Admin 
 const isAdmin = async ({ teamId, userId }) => {
   const team = await Team.findById(teamId)
-  if(team === null) return 0
+  if (team === null) return 0
   return team.admin == userId
 }
 
@@ -155,7 +155,7 @@ const getAllInvite = async ({ userId }) => {
   }
 }
 
-//response for request 
+//response for invite 
 const responseForInvite = async ({ userId, inviteId, accept }) => {
   try {
     const invite = await teamRequest.findById(inviteId)
@@ -186,6 +186,7 @@ const ToMember = async ({ teamId, userId }) => {
   }
 }
 
+// add more invite from team's admin
 const addMoreInvite = async ({ teamId, userId, inviteeArray }) => {
   try {
     if (!await isAdmin({ teamId, userId })) return { status: 'not have permission' }
@@ -211,7 +212,7 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
       if (!(team.member.includes(inviteeArray[i]) || (team.invites.includes(inviteeArray[i])))) {
         team.invites.push(inviteeArray[i])
         await inviteMember({ teamId, userId, inviteeId: inviteeArray[i] })
-        await Notification.create({title: team.name, content:"no msg", owner: userId, type_of_notification:{type:"Team Invite", teamId: teamId}})
+        await Notification.create({ title: team.name, content: "no msg", owner: userId, type_of_notification: { type: "Team Invite", teamId: teamId } })
       }
     }
     const newTeam = team.save()
@@ -222,13 +223,13 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
   }
 }
 
-//transform from mail to id of user
+//transform from mail string to id of user
 const transformInvite = async ({ inviteeArray }) => {
   try {
-    if(inviteeArray === null) return
+    if (inviteeArray === null) return
     let temp = new Array()
     for (let i = 0; i < inviteeArray.length; i++) {
-      var user = await User.findOne({ 'email': inviteeArray[i]})
+      var user = await User.findOne({ 'email': inviteeArray[i] })
       temp.push(user.id)
     }
     return temp
