@@ -34,11 +34,11 @@ const taskSchema = new Schema({
         required: true
     },
 
-    executor: {
+    executor: [{
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
+    }],
 
     files: [{
         type: String,

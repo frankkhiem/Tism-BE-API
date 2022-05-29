@@ -2,14 +2,16 @@ const createError = require("http-errors");
 // const { translateAliases } = require("../../models/User");
 
 const Task = require('../../models/Task');
+const Team = require("../../models/Team");
 const User = require('../../models/User');
 
 
-const getAllTasks = async({ user }) => {
+const getAllTasks = async ({ team, userId }) => {
+    if(!team.member.includes(userId.toString())) return "not have permission";
     var allTasks = new Array();
     const tasks = await Task.find({});
     tasks.map(task => {
-        if (task.team == team._id) {
+        if (task.team == team.id) {
             allTasks.push(task);
         }
     })
@@ -34,10 +36,14 @@ const createTask = async({
     taskType,
     startTime,
     endTime,
-    executorId
+    executorArray
 }) => {
     try {
+        const team = await Team.findById(teamId)
+        const executorIdArray = await transformExecutorArray({executorArray})
+
         assigner = userId.toString();
+        if(!team.member.includes(assigner)) return "not have permission"
         const newTask = new Task({
             assign: assigner,
             team: teamId,
@@ -45,7 +51,7 @@ const createTask = async({
             type: taskType,
             start_time: startTime,
             end_time: endTime,
-            executor: executorId
+            executor: executorIdArray
         });
         const task = await newTask.save();
 
@@ -56,15 +62,18 @@ const createTask = async({
 };
 
 //update team's detail
-const updateTask = async ({ taskId, taskName, taskType, startTime, endTime, executorId }) => {
-    try {
+const updateTask = async ({ userId, taskId, taskName, taskType, startTime, endTime, executor }) => {
+    try {   
         let task = await Task.findById(taskId);
+        //console.log(task.assign, userId)
+        if(task.assign.toString() != userId.toString()) return "not have permission"
 
+        const executorIdArray = await transformExecutorArray({executorArray:executor})
         task.name = taskName;
         task.type = taskType;
         task.start_time = startTime;
         task.end_time = endTime;
-        task.executor = executorId;
+        task.executor = executorIdArray;
 
         await task.save();
         return {
@@ -77,14 +86,31 @@ const updateTask = async ({ taskId, taskName, taskType, startTime, endTime, exec
 };
 
 //remove team
-const removeTask = async({ taskId }) => {
+const removeTask = async({ taskId, userId }) => {
     try {
-        const task = await Task.findByIdAndRemove(taskId)
+        let task = await Task.findById(taskId);
+        if(userId.toString() != task.assign.toString()) return "not have permission"
+        await Task.findByIdAndRemove(taskId)
         return {
             success: true,
             message: 'Removed task successfully'
         };
     } catch (error) {
+        throw createError(error.statusCode || 500, error.message);
+    }
+}
+//transform executor email to executorId
+const transformExecutorArray = async ({ executorArray }) => {
+    try {
+        if (executorArray === null) return
+        let temp = new Array()
+        for (let i = 0; i < executorArray.length; i++) {
+            var user = await User.findOne({ 'email': executorArray[i] })
+            temp.push(user.id)
+        }
+        return temp
+    }
+    catch (error) {
         throw createError(error.statusCode || 500, error.message);
     }
 }

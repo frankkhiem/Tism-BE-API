@@ -29,7 +29,23 @@ const _getTeam = (team) => {
     admin: team.admin,
     invites: team.invites,
     member: team.member,
-
+  }
+};
+//
+const _getTeamAdmin = async (team) => {
+  const teamAdmin = await User.findById(team.admin)
+  return {
+    teamId: team._id,
+    teamName: team.teamName,
+    type: team.type,
+    is_private: team.is_private,
+    avatar: team.avatar,
+    //description: team.description,
+    admin: team.admin,
+    invites: team.invites,
+    member: team.member,
+    adminName: teamAdmin.fullname,
+    avatar: teamAdmin.avatar
   }
 };
 
@@ -37,7 +53,7 @@ const _getTeam = (team) => {
 const getTeam = async ({ teamId }) => {
   try {
     const team = await Team.findById(teamId);
-    return _getTeam(team);
+    return await _getTeamAdmin(team);
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }

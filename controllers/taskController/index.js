@@ -6,10 +6,12 @@ const Team = require('../../models/Team');
 // [GET] /alltasks
 const getAllTasks = async(req, res) => {
     try {
+        const userId = req.userId;
         const teamId = req.params.teamid;
         const team = await Team.findById(teamId);
         const result = await taskService.getAllTasks({
-            team
+            team,
+            userId
         });
 
         res.status(200).json(result);
@@ -42,7 +44,7 @@ const createTask = async(req, res) => {
         const taskType = req.body.taskType;
         const startTime = req.body.startTime;
         const endTime = req.body.endTime;
-        const executorId = req.body.executorId;
+        const executorArray = req.body.executorId;
 
         //const description = req.body.description;
         const result = await taskService.createTask({
@@ -52,7 +54,7 @@ const createTask = async(req, res) => {
             taskType,
             startTime,
             endTime,
-            executorId
+            executorArray
         });
         res.status(200).json(result);
     } catch (error) {
@@ -64,13 +66,14 @@ const createTask = async(req, res) => {
 //update task
 const updateTask = async(req, res) => {
     try {
+        const userId = req.userId;
         const taskId = req.body.taskId;
         const taskName = req.body.taskName;
         const taskType = req.body.taskType;
         const startTime = req.body.startTime;
         const endTime = req.body.endTime;
-        const executorId = req.body.executorId;
-        const result = await taskService.updateTask({ taskId, taskName, taskType, startTime, endTime, executorId });
+        const executor = req.body.executor;
+        const result = await taskService.updateTask({ userId, taskId, taskName, taskType, startTime, endTime, executor });
 
         res.status(200).json(result);
     } catch (error) {
@@ -81,8 +84,9 @@ const updateTask = async(req, res) => {
 //remove task
 const removeTask = async(req, res) => {
     try {
+        const userId = req.userId;
         const { taskId } = req.params;
-        const result = await taskService.removeTask({ taskId });
+        const result = await taskService.removeTask({ taskId, userId });
 
         if (result.success) {
             return res.status(200).json(result);
