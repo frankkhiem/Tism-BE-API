@@ -45,7 +45,7 @@ const _getTeamAdmin = async (team) => {
     invites: team.invites,
     member: team.member,
     adminName: teamAdmin.fullname,
-    avatar: teamAdmin.avatar
+    adminAvatar: teamAdmin.avatar
   }
 };
 

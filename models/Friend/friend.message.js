@@ -16,10 +16,11 @@ const friendMessageSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'file'],
+    enum: ['text', 'image', 'file', 'video-call'],
     default: 'text'
   },
-  content: String
+  content: String,
+  description: String
 },
 {
   collection: 'friend_messages',

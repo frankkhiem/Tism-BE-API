@@ -2,6 +2,8 @@ const createError = require("http-errors");
 
 const User = require('../../models/User');
 const { Friendship, FriendRequest, FriendMessage } = require('../../models/Friend');
+const fs = require('fs');
+const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
 const getListConversations = async ({ userId }) => {
   try {
@@ -40,13 +42,19 @@ const getListConversations = async ({ userId }) => {
         createdAt: -1
       }).limit(1);
 
-      let lastMessage;
+      let lastMessage = {};
       let lastUpdated;
       if( lastFriendMessage ) {
-        lastMessage = {
-          type: lastFriendMessage.type,
-          content: lastFriendMessage.content,
-        };
+        lastMessage.type = lastFriendMessage.type;
+        if( lastFriendMessage.type === 'image' ) {
+          lastMessage.content = 'Ảnh gửi lên.';
+        } else if( lastFriendMessage.type === 'file' ) {
+          lastMessage.content = 'Tệp đính kèm.';
+        } else if( lastFriendMessage.type === 'video-call' ) {
+          lastMessage.content = 'Cuộc gọi Video.';
+        } else {
+          lastMessage.content = lastFriendMessage.content
+        }
         lastUpdated = lastFriendMessage.createdAt;
       } else {
         lastMessage = {
@@ -109,9 +117,12 @@ const getConversation = async ({ userId, conversationId }) => {
       const friendStatus = friend.status;
       const friendAvatar = friend.avatar;
 
-      const messages = await FriendMessage.find({
+      const totalMessages = await FriendMessage.countDocuments({
         friendship: conversationId
       });
+      const messages = await FriendMessage.find({
+        friendship: conversationId
+      }).limit(10).sort({ createdAt: -1 });
 
       return {
         success: true,
@@ -121,7 +132,8 @@ const getConversation = async ({ userId, conversationId }) => {
           friendFullName,
           friendStatus,
           friendAvatar,
-          messages
+          totalMessages,
+          messages: messages.reverse()
         }
       };
     }
@@ -186,6 +198,152 @@ const sendTextMessage = async ({ userId, conversationId, content }) => {
   }
 };
 
+const sendImageMessage = async ({ userId, conversationId, image }) => {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      const friendId = conversation.firstPerson.equals(userId) ? conversation.secondPerson : conversation.firstPerson
+
+      let newMessage = new FriendMessage({
+        friendship: conversation._id,
+        from: userId,
+        to: friendId,
+        type: 'image'
+      });
+
+      const uploadUrls = await uploadToFirebase(
+        image.path, 
+        `uploads/conversations/${conversationId}`,
+        image.filename
+      );
+      // Xóa file ở tmp/ khi upload lên Firebase thành công
+      fs.unlink(image.path, (error) => {
+        if( error ) {
+          throw error;
+        }
+      });
+
+      newMessage.content = uploadUrls.url;
+      newMessage.description = uploadUrls.urlDownload;
+
+      await newMessage.save();
+
+      if( conversation.firstPerson.equals(friendId) ) {
+        conversation.firstPersonSeen = false;
+      } else {
+        conversation.secondPersonSeen = false;
+      }
+
+      await conversation.save();
+
+      io.to(friendId.toString()).emit('new-message', newMessage);
+
+      return {
+        success: true,
+        message: newMessage
+      };
+    }
+    
+    // Xóa file ở tmp/ khi không tìm thấy conversation tương ứng
+    fs.unlink(image.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
+
+    return {
+      success: false,
+      message: 'Send message to Conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
+const sendFileMessage = async ({ userId, conversationId, file }) => {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      const friendId = conversation.firstPerson.equals(userId) ? conversation.secondPerson : conversation.firstPerson
+
+      let newMessage = new FriendMessage({
+        friendship: conversation._id,
+        from: userId,
+        to: friendId,
+        type: 'file'
+      });
+
+      const uploadUrls = await uploadToFirebase(
+        file.path, 
+        `uploads/conversations/${conversationId}`,
+        file.filename
+      );
+      // Xóa file ở tmp/ khi upload lên Firebase thành công
+      fs.unlink(file.path, (error) => {
+        if( error ) {
+          throw error;
+        }
+      });
+
+      newMessage.content = file.originalname;
+      newMessage.description = uploadUrls.urlDownload
+
+      await newMessage.save();
+
+      if( conversation.firstPerson.equals(friendId) ) {
+        conversation.firstPersonSeen = false;
+      } else {
+        conversation.secondPersonSeen = false;
+      }
+
+      await conversation.save();
+
+      io.to(friendId.toString()).emit('new-message', newMessage);
+
+      return {
+        success: true,
+        message: newMessage
+      };
+    }
+    
+    // Xóa file ở tmp/ khi không tìm thấy conversation tương ứng
+    fs.unlink(image.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
+
+    return {
+      success: false,
+      message: 'Send message to Conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 const seenConversation = async ({ userId, conversationId }) =>  {
   try {
     const conversation = await Friendship.findOne({
@@ -224,9 +382,112 @@ const seenConversation = async ({ userId, conversationId }) =>  {
   }
 };
 
+const unseenConversation = async ({ userId, conversationId }) =>  {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      if( conversation.firstPerson.equals(userId) ) {
+        conversation.firstPersonSeen = false;
+      } else {
+        conversation.secondPersonSeen = false;
+      }
+
+      await conversation.save();
+
+      return {
+        success: true,
+        message: 'Mark unseen tag for conversation successfully'
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Mark unseen tag for conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
+const getRecentMessages = async ({ userId, conversationId, skip, take }) => {
+  try {
+    const conversation = await Friendship.findOne({
+      _id: conversationId,
+      $or: [
+        {
+          firstPerson: userId
+        }, 
+        {
+          secondPerson: userId
+        }
+      ]
+    });
+
+    if( conversation ) {
+      const messages = await FriendMessage.find({
+        friendship: conversationId
+      }).limit(take).skip(skip).sort({ createdAt: -1 });
+
+      return {
+        success: true,
+        messages: messages.reverse()
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Get list recent messages in Conversation failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
+const deleteMessage = async ({ userId, conversationId, messageId }) => {
+  try {
+    const deletedMessage = await FriendMessage.findOneAndDelete({
+      _id: messageId,
+      friendship: conversationId,
+      from: userId
+    });
+
+    if( deletedMessage ) {
+      io.to(deletedMessage.to.toString()).emit('deleted-message', deletedMessage);
+      
+      return {
+        success: true,
+        deletedMessage
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Delete message failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   getListConversations,
   getConversation,
   sendTextMessage,
-  seenConversation
+  sendImageMessage,
+  sendFileMessage,
+  seenConversation,
+  unseenConversation,
+  getRecentMessages,
+  deleteMessage
 }

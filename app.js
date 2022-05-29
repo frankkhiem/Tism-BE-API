@@ -6,14 +6,18 @@ const cors = require('cors');
 
 const db = require('./helpers/db');
 const router = require('./routes');
-const socketServer = require('./helpers/socketServer');
+const { createSocketServer } = require('./helpers/socketServer');
+const { createPeerServer } = require('./helpers/peerServer');
 
 const app = express();
 const httpServer = createServer(app);
 const port = 3000;
 
 // Setup socket.io server
-global.io = socketServer.createSocketServer({ httpServer });
+global.io = createSocketServer({ httpServer });
+
+// Setup peerjs server
+createPeerServer();
 
 // Config .env
 dotenv.config();
@@ -32,6 +36,14 @@ app.use(cors());
 
 // Use router
 app.use(router);
+
+// Handler validation error
+app.use(function(err, req, res, next) {
+  if (err instanceof ValidationError) {
+    return res.status(err.statusCode).json(err);
+  }
+  next();
+})
 
 httpServer.listen(port, () => {
   console.log(`Tism app listening on port ${port}`);
