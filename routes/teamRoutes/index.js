@@ -7,6 +7,8 @@ router.use(authMiddleware.checkAuth);
 
 //[GET] get team's detail
 router.get('/getteam/:id', teamController.getTeam);
+//[GET] get all members from team
+// router.get('/getallmembers/:id', teamController.getAllMembersOfTeam);
 //[POST] create team 
 router.post('/newteam', teamController.createTeam);
 //[GET] get user's all team

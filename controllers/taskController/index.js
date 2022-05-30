@@ -21,7 +21,20 @@ const getAllTasks = async(req, res) => {
     }
 };
 
-//// [GET] /alltasks getmy all task
+//// [GET] /mytasks get all my task
+const getMyTasks = async(req, res) => {
+    try {
+        const userId = req.userId;
+        const result = await taskService.getMyTasks({
+            userId
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.status || 400);
+        res.json(error);
+    }
+};
 // [GET] /task
 const getTask = async(req, res) => {
     try {
@@ -103,6 +116,7 @@ const removeTask = async(req, res) => {
 
 module.exports = {
     getTask,
+    getMyTasks,
     createTask,
     getAllTasks,
     removeTask,
