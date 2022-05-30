@@ -14,19 +14,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-// [PUT] /user/profile
-const updateUsername = async (req, res) => {
-  try {
-    const fullname = req.body.fullname;
-
-    const userId = req.userId;
-
-    const result = await userService.updateUsername({ userId, fullname });
-  } catch (error) {
-    res.status(error.status || 400);
-    res.json(error);
-  }
-};
 // [GET] /user/status
 const getUserStatus = async (req, res) => {
   try {
@@ -121,8 +108,6 @@ const editUserDescription = async (req, res) => {
 
 module.exports = {
   getProfile,
-  editUserDescription,
-  updateUsername,
   getUserStatus,
   getPersonStatus,
   editUserStatus,

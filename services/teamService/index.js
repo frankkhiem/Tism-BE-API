@@ -228,7 +228,7 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
       if (!(team.member.includes(inviteeArray[i]) || (team.invites.includes(inviteeArray[i])))) {
         team.invites.push(inviteeArray[i])
         await inviteMember({ teamId, userId, inviteeId: inviteeArray[i] })
-        await Notification.create({ title: team.name, content: "no msg", owner: userId, type_of_notification: { type: "Team Invite", teamId: teamId } })
+        //await Notification.create({ title: team.name, content: "no msg", owner: userId, type_of_notification: { type: "Team Invite", teamId: teamId } })
       }
     }
     const newTeam = team.save()

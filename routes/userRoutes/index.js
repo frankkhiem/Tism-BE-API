@@ -36,7 +36,4 @@ router.post('/avatar/upload', uploadAvatar.single('avatar'), userController.uplo
 // API edit user desciption
 router.patch('/description', userValidations.editUserDescription, userController.editUserDescription);
 
-// API update user name
-router.put('/profile', userController.updateUsername);
 module.exports = router;
-//

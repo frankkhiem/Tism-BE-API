@@ -20,11 +20,13 @@ const getAllTasks = async(req, res) => {
         res.json(error);
     }
 };
+
+//// [GET] /alltasks get my all task
 // [GET] /task
-const getTask = async(req, res) => {
+const getMyTasks = async(req, res) => {
     try {
         const taskId = req.params.taskid;
-        const result = await taskService.getTask({
+        const result = await taskService.getMyTasks({
             taskId
         });
 
@@ -44,7 +46,7 @@ const createTask = async(req, res) => {
         const taskType = req.body.taskType;
         const startTime = req.body.startTime;
         const endTime = req.body.endTime;
-        const executorArray = req.body.executorId;
+        const executorArray = req.body.executor;
 
         //const description = req.body.description;
         const result = await taskService.createTask({
