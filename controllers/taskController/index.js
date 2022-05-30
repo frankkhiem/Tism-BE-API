@@ -21,12 +21,12 @@ const getAllTasks = async(req, res) => {
     }
 };
 
-//// [GET] /alltasks get my all task
+//// [GET] /alltasks getmy all task
 // [GET] /task
-const getMyTasks = async(req, res) => {
+const getTask = async(req, res) => {
     try {
         const taskId = req.params.taskid;
-        const result = await taskService.getMyTasks({
+        const result = await taskService.getTask({
             taskId
         });
 
