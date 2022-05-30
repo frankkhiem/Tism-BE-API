@@ -6,6 +6,10 @@ const createPeerServer = (serverOptions = {
 }) => {
   const peerServer = PeerServer(serverOptions);
 
+  peerServer.on('connection', (client) => { 
+    console.log('new peer client connected: ', client.id);
+  });
+
   return peerServer;
 }
 
