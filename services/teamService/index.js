@@ -178,7 +178,13 @@ const getAllInvite = async ({ userId }) => {
   try {
     const allInvite = await teamRequest.find({ 'invitee': userId, 'accept': 'false' })
     //console.log(inviteArray.length)
-    return allInvite
+    let inviteArray = new Array()
+    for(let i=0; i < allInvite.length; i++){
+      let team = await Team.findById(allInvite[i].team)
+      let user = await User.findById(team.admin)
+      inviteArray.push({teamName: team.teamName, adminName: user.fullname})
+    }
+    return inviteArray
   }
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
