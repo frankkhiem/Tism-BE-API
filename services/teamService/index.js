@@ -4,7 +4,10 @@ const { translateAliases } = require("../../models/User");
 const Team = require('../../models/Team');
 const User = require('../../models/User');
 const teamRequest = require('../../models/Team/team_request');
+const TeamMessage = require('../../models/Team/team.message');
 const Notification = require('../../models/notification');
+const fs = require('fs');
+const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
 const getAllTeam = async ({ user }) => {
   var allTeam = new Array();
@@ -54,6 +57,33 @@ const getTeam = async ({ teamId }) => {
   try {
     const team = await Team.findById(teamId);
     return await _getTeamAdmin(team);
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
+const getTeamMembersInfo = async ({ teamId }) => {
+  try {
+    const team = await Team.findById(teamId);
+    const members = team.member;
+
+    let result = [];
+    for (const memberId of members) {
+      const member = await User.findById(memberId);
+      if( member ) {
+        const memberInfo = {
+          id: member._id,
+          name: member.fullname,
+          email: member.email,
+          avatar: member.avatar,
+          status: member.status
+        }
+
+        result.push(memberInfo);
+      }
+    }
+
+    return result;
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }
@@ -253,10 +283,228 @@ const transformInvite = async ({ inviteeArray }) => {
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }
+};
+
+const getRecentTeamMessages = async ({ userId, teamId, skip, take }) => {
+  try {
+    const team = await Team.findOne({
+      _id: teamId,
+      member: userId
+    });
+
+    if( team ) {
+      const totalMessages = await TeamMessage.countDocuments({
+        team: teamId
+      });
+      let messages = await TeamMessage.find({
+        team: teamId
+      }).limit(take).skip(skip).sort({ createdAt: -1 });
+
+      for(let i = 0; i < messages.length; i++) {
+        const sender = await User.findById(messages[i].from);
+        messages[i] = {
+          ...messages[i]._doc,
+          senderName: sender?.fullname,
+          senderAvatar: sender?.avatar
+        }        
+      }
+
+      return {
+        success: true,
+        totalMessages,
+        messages: messages.reverse()
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Get Team\'s messages failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
 }
+
+const sendTextMessage = async ({ userId, teamId, content }) => {
+  try {
+    const team = await Team.findOne({
+      _id: teamId,
+      member: userId
+    });
+
+    if( team ) {
+      let newMessage = new TeamMessage({
+        team: team._id,
+        from: userId,
+        type: 'text',
+        content
+      });
+
+      await newMessage.save();      
+      const sender = await User.findById(userId);
+      const message = {
+        ...newMessage._doc,
+        senderName: sender.fullname,
+        senderAvatar: sender.avatar
+      };
+
+      io.to(team.member).except(userId.toString()).emit('new-team-message', message);
+
+      return {
+        success: true,
+        message
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Send message to Team failed!'
+    };
+  } catch (error) {
+  }
+};
+
+const sendImageMessage = async ({ userId, teamId, image }) => {
+  try {
+    const team = await Team.findOne({
+      _id: teamId,
+      member: userId
+    });
+
+    if( team ) {
+      let newMessage = new TeamMessage({
+        team: team._id,
+        from: userId,
+        type: 'image'
+      });
+
+      const uploadUrls = await uploadToFirebase(
+        image.path, 
+        `uploads/teams/${teamId}/chat`,
+        image.filename
+      );
+
+      newMessage.content = uploadUrls.url;
+      newMessage.description = uploadUrls.urlDownload;
+
+      await newMessage.save();
+      const sender = await User.findById(userId);
+      const message = {
+        ...newMessage._doc,
+        senderName: sender.fullname,
+        senderAvatar: sender.avatar
+      };
+
+      io.to(team.member).except(userId.toString()).emit('new-team-message', message);
+
+      return {
+        success: true,
+        message
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Send message to Team failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  } finally {
+    // Xóa file ở tmp/ kể cả thành công hay gặp lỗi
+    fs.unlink(image.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
+  }
+};
+
+const sendFileMessage = async ({ userId, teamId, file }) => {
+  try {
+    const team = await Team.findOne({
+      _id: teamId,
+      member: userId
+    });
+
+    if( team ) {
+      let newMessage = new TeamMessage({
+        team: team._id,
+        from: userId,
+        type: 'file'
+      });
+
+      const uploadUrls = await uploadToFirebase(
+        file.path, 
+        `uploads/teams/${teamId}/chat`,
+        file.filename
+      );
+
+      newMessage.content = file.originalname;
+      newMessage.description = uploadUrls.urlDownload;
+
+      await newMessage.save();
+      const sender = await User.findById(userId);
+      const message = {
+        ...newMessage._doc,
+        senderName: sender.fullname,
+        senderAvatar: sender.avatar
+      };
+
+      io.to(team.member).except(userId.toString()).emit('new-team-message', message);
+
+      return {
+        success: true,
+        message
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Send message to Team failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  } finally {
+    // Xóa file ở tmp/ kể cả thành công hay gặp lỗi
+    fs.unlink(file.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
+  }
+};
+
+const deleteMessage = async ({ userId, teamId, messageId }) => {
+  try {
+    const team = await Team.findById(teamId);
+    const deletedMessage = await TeamMessage.findOneAndDelete({
+      _id: messageId,
+      team: team._id,
+      from: userId
+    });
+
+    if( deletedMessage ) {
+      io.to(team.member).except(userId.toString()).emit('deleted-team-message', deletedMessage);
+      
+      return {
+        success: true,
+        deletedMessage
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Delete team message failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 module.exports = {
   _getTeam,
   getTeam,
+  getTeamMembersInfo,
   createTeam,
   getAllTeam,
   updateTeam,
@@ -265,5 +513,10 @@ module.exports = {
   getAllInvite,
   responseForInvite,
   inviteToAnyOne,
-  addMoreInvite
+  addMoreInvite,
+  getRecentTeamMessages,
+  sendTextMessage,
+  sendImageMessage,
+  sendFileMessage,
+  deleteMessage
 };

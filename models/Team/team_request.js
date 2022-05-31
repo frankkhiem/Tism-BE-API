@@ -23,6 +23,6 @@ const teamRequestSchema = new Schema({
         timestamps: true
     });
 
-const teamRequest = mongoose.model('teamRequest', teamRequestSchema);
+const TeamRequest = mongoose.model('TeamRequest', teamRequestSchema);
 
-module.exports = teamRequest;
+module.exports = TeamRequest;
