@@ -227,12 +227,6 @@ const sendImageMessage = async ({ userId, conversationId, image }) => {
         `uploads/conversations/${conversationId}`,
         image.filename
       );
-      // Xóa file ở tmp/ khi upload lên Firebase thành công
-      fs.unlink(image.path, (error) => {
-        if( error ) {
-          throw error;
-        }
-      });
 
       newMessage.content = uploadUrls.url;
       newMessage.description = uploadUrls.urlDownload;
@@ -254,13 +248,6 @@ const sendImageMessage = async ({ userId, conversationId, image }) => {
         message: newMessage
       };
     }
-    
-    // Xóa file ở tmp/ khi không tìm thấy conversation tương ứng
-    fs.unlink(image.path, (error) => {
-      if( error ) {
-        throw error;
-      }
-    });
 
     return {
       success: false,
@@ -268,6 +255,13 @@ const sendImageMessage = async ({ userId, conversationId, image }) => {
     };
   } catch (error) {
     throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  } finally {
+    // Xóa file ở tmp/ kể cả thành công hay gặp lỗi
+    fs.unlink(image.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
   }
 };
 
@@ -300,12 +294,6 @@ const sendFileMessage = async ({ userId, conversationId, file }) => {
         `uploads/conversations/${conversationId}`,
         file.filename
       );
-      // Xóa file ở tmp/ khi upload lên Firebase thành công
-      fs.unlink(file.path, (error) => {
-        if( error ) {
-          throw error;
-        }
-      });
 
       newMessage.content = file.originalname;
       newMessage.description = uploadUrls.urlDownload
@@ -327,13 +315,6 @@ const sendFileMessage = async ({ userId, conversationId, file }) => {
         message: newMessage
       };
     }
-    
-    // Xóa file ở tmp/ khi không tìm thấy conversation tương ứng
-    fs.unlink(image.path, (error) => {
-      if( error ) {
-        throw error;
-      }
-    });
 
     return {
       success: false,
@@ -341,6 +322,13 @@ const sendFileMessage = async ({ userId, conversationId, file }) => {
     };
   } catch (error) {
     throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  } finally {
+    // Xóa file ở tmp/ kể cả thành công hay gặp lỗi
+    fs.unlink(file.path, (error) => {
+      if( error ) {
+        throw error;
+      }
+    });
   }
 };
 

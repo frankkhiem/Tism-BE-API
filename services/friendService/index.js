@@ -89,7 +89,7 @@ const getListFriends = async ({ userId }) => {
         ]
       });
       const chatRoomId = friendship._id;
-      const history = friendship.createdAt.toLocaleDateString('en-GB');
+      const history = friendship.createdAt;
       result.push({
         ..._getBasicDetailPerson(friend),
         mutualFriends,
@@ -97,6 +97,10 @@ const getListFriends = async ({ userId }) => {
         chatRoomId
       });
     }
+
+    result.sort((friend1, friend2) => {
+      return friend1.history >= friend2.history ? -1 : 1;
+    });
 
     return result;
   } catch (error) {

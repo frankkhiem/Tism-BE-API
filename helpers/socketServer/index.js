@@ -215,6 +215,7 @@ const createSocketServer = ({
         const isDisconnected = countSockets.size === 0;
         if( isDisconnected ) {
           // update the user status
+          const user = await User.findById(socket.userId);
           user.status = 'offline';
           await user.save();
 

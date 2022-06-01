@@ -40,6 +40,21 @@ const getTeam = async (req, res) => {
 //       teamId, userId
 //     });
 
+// [GET] /team/:teamId/members
+const getTeamMembersInfo = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const result = await teamService.getTeamMembersInfo({ teamId });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+//[POST] create new invite to friend
+
 //     res.status(200).json(result);
 //   } catch (error) {
 //     res.status(error.status || 400);
@@ -164,16 +179,116 @@ const addMoreInvite = async (req, res) => {
     res.status(error.status || 400);
     res.json(error);
   }
+};
+
+// [GET] /team/:teamId/messages
+const getRecentTeamMessages = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { teamId } = req.params;
+    const { skip, take } = req.query;
+
+    const result = await teamService.getRecentTeamMessages({ userId, teamId, skip, take });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
 }
+
+// [POST] /team/:teamId/text-message
+const sendTextMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { teamId } = req.params;
+    const { content } = req.body;
+
+    const result = await teamService.sendTextMessage({ userId, teamId, content });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+// [POST] /team/:teamId/image-message
+const sendImageMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { teamId } = req.params;
+    const image = req.file;
+
+    const result = await teamService.sendImageMessage({ userId, teamId, image });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+// [POST] /team/:teamId/file-message
+const sendFileMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { teamId } = req.params;
+    const file = req.file;
+
+    const result = await teamService.sendFileMessage({ userId, teamId, file });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+// [DELETE] /team/:teamId/messages/:messageId
+const deleteMessage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { teamId, messageId } = req.params;
+
+    const result = await teamService.deleteMessage({ userId, teamId, messageId });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
 
 module.exports = {
   getTeam,
   //getAllMembersOfTeam,
+  getTeamMembersInfo,
   createTeam,
   getAllTeam,
   removeTeam,
   updateTeamDetail,
   getAllInvite,
   responseForInvite,
-  addMoreInvite
+  addMoreInvite,
+  getRecentTeamMessages,
+  sendTextMessage,
+  sendImageMessage,
+  sendFileMessage,
+  deleteMessage
 };
