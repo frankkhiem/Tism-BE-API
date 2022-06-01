@@ -159,7 +159,7 @@ const inviteMember = async ({ teamId, inviterId, inviteeId }) => {
     team: teamId,
     inviter: inviterId,
     invitee: inviteeId,
-    accept: "false"
+    accept: ""
   })
   await team_request.save()
   //console.log('invitation added')
@@ -176,13 +176,13 @@ const inviteMember = async ({ teamId, inviterId, inviteeId }) => {
 // get all team's request for an user
 const getAllInvite = async ({ userId }) => {
   try {
-    const allInvite = await teamRequest.find({ 'invitee': userId, 'accept': 'false' })
+    const allInvite = await teamRequest.find({ 'invitee': userId, 'accept': '' })
     //console.log(inviteArray.length)
     let inviteArray = new Array()
     for(let i=0; i < allInvite.length; i++){
       let team = await Team.findById(allInvite[i].team)
       let user = await User.findById(team.admin)
-      inviteArray.push({teamName: team.teamName, adminName: user.fullname})
+      inviteArray.push({inviteId: allInvite[i]._id, teamId: allInvite[i].team, accept:allInvite[i].accept ,teamName: team.teamName, adminName: user.fullname, created_date:allInvite[i].createdAt})
     }
     return inviteArray
   }
@@ -198,16 +198,19 @@ const responseForInvite = async ({ userId, inviteId, accept }) => {
 
     if (invite.invitee.toString() != userId.toString()) return "not have permission"
 
-    const team = await Team.findById(invite.team)
     invite.accept = accept
-    if (invite.accept == 'true') {
-      if(team.invites.indexOf(userId.toString()) > -1) {
-        team.invites.splice(team.invites.indexOf(userId.toString()), 1)// xoa user khoi invite khi ho dong y
+    await invite.save()
+    if (invite.accept != '') {
+      if(accept == 'true')
+        await ToMember({ teamId: invite.team, userId })// them vao member khi dong y vao team
+      const team = await Team.findById(invite.team)
+      let index = team.invites.indexOf(userId.toString())
+      if(index > -1) {
+        team.invites.splice(index, 1)// xoa user khoi invite khi ho dong y
         await team.save()
       }
-      await ToMember({ teamId: invite.team, userId })// them vao member khi dong y vao team
     }
-    await invite.save()
+
     return {
       success: true,
       message: 'response is success'
