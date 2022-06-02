@@ -64,6 +64,12 @@ router.post(
   teamController.sendFileMessage
 );
 
+// API create a team meeting
+router.post('/:teamId/meeting', teamController.createTeamMeeting);
+
+// API end a team meeting
+router.patch('/meeting/:meetingId/end', teamController.endTeamMeeting);
+
 //[DELETE] delete a message in team
 router.delete('/:teamId/messages/:messageId', teamController.deleteMessage);
 

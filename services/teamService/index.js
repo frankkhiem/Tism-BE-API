@@ -474,6 +474,85 @@ const sendFileMessage = async ({ userId, teamId, file }) => {
   }
 };
 
+const createTeamMeeting = async ({ userId, teamId }) => {
+  try {
+    const team = await Team.findOne({
+      _id: teamId,
+      member: userId
+    });
+
+    if( team ) {
+      let newMessage = new TeamMessage({
+        team: team._id,
+        from: userId,
+        type: 'meeting',
+        content: 'Họp bàn tiến độ',
+        description: 'happening'
+      });
+
+      await newMessage.save();      
+      const sender = await User.findById(userId);
+      const message = {
+        ...newMessage._doc,
+        senderName: sender.fullname,
+        senderAvatar: sender.avatar
+      };
+
+      io.to(team.member).emit('new-team-meeting', message);
+
+      return {
+        success: true,
+        message
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Create Team meeting failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
+const endTeamMeeting = async ( { userId, meetingId, duringTimes } ) => {
+  try {
+    const meeting = await TeamMessage.findOne({
+      _id: meetingId,
+      from: userId
+    });
+
+    if( meeting ) {
+      meeting.content = duringTimes;
+      meeting.description = 'finished';
+
+      await meeting.save(); 
+      const team = await Team.findById(meeting.team);
+      const sender = await User.findById(userId);
+      const message = {
+        ...meeting._doc,
+        senderName: sender.fullname,
+        senderAvatar: sender.avatar
+      };
+
+      io.to(team.member).emit('end-team-meeting', message);
+      io.to(meeting._id).emit('end-team-meeting', message);
+
+      return {
+        success: true,
+        message
+      };
+    }
+
+    return {
+      success: false,
+      message: 'End Team meeting failed!'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
 const deleteMessage = async ({ userId, teamId, messageId }) => {
   try {
     const team = await Team.findById(teamId);
@@ -518,5 +597,7 @@ module.exports = {
   sendTextMessage,
   sendImageMessage,
   sendFileMessage,
+  createTeamMeeting,
+  endTeamMeeting,
   deleteMessage
 };
