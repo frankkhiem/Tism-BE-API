@@ -246,8 +246,31 @@ const createTeamMeeting = async (req, res) => {
   try {
     const userId = req.userId;
     const { teamId } = req.params;
+    const { meetingName } = req.body;
 
-    const result = await teamService.createTeamMeeting({ userId, teamId });
+    const result = await teamService.createTeamMeeting({ 
+      userId, 
+      teamId,
+      meetingName
+    });
+
+    if( result.success ) {
+      return res.status(200).json(result);
+    }
+    return res.status(400).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
+//[GET] /team/meeting/:meetingId/permission
+const checkMeetingPermissionAccess = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { meetingId } = req.params;
+
+    const result = await teamService.checkMeetingPermissionAccess({ userId, meetingId });
 
     if( result.success ) {
       return res.status(200).json(result);
@@ -311,6 +334,7 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   createTeamMeeting,
+  checkMeetingPermissionAccess,
   endTeamMeeting,
   deleteMessage
 };

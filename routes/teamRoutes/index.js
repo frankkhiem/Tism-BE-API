@@ -67,6 +67,9 @@ router.post(
 // API create a team meeting
 router.post('/:teamId/meeting', teamController.createTeamMeeting);
 
+// API check permission access to meeting
+router.get('/meeting/:meetingId/permission', teamController.checkMeetingPermissionAccess);
+
 // API end a team meeting
 router.patch('/meeting/:meetingId/end', teamController.endTeamMeeting);
 

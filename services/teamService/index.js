@@ -474,7 +474,7 @@ const sendFileMessage = async ({ userId, teamId, file }) => {
   }
 };
 
-const createTeamMeeting = async ({ userId, teamId }) => {
+const createTeamMeeting = async ({ userId, teamId, meetingName }) => {
   try {
     const team = await Team.findOne({
       _id: teamId,
@@ -486,7 +486,7 @@ const createTeamMeeting = async ({ userId, teamId }) => {
         team: team._id,
         from: userId,
         type: 'meeting',
-        content: 'Họp bàn tiến độ',
+        content: meetingName != '' ? meetingName : 'Cuộc họp nhóm',
         description: 'happening'
       });
 
@@ -515,7 +515,35 @@ const createTeamMeeting = async ({ userId, teamId }) => {
   }
 };
 
-const endTeamMeeting = async ( { userId, meetingId, duringTimes } ) => {
+const checkMeetingPermissionAccess = async ({ userId, meetingId }) => {
+  try {
+    const meeting = await TeamMessage.findById(meetingId);
+    if( meeting && meeting.type === 'meeting' && meeting.description === 'happening' ) {
+      const team = await Team.findOne({
+        id: meeting.team,
+        member: userId
+      });
+
+      if( team ) {
+        return {
+          success: true,
+          isOwner: meeting.from.equals(userId) ? true : false,
+          meetingName: meeting.content,
+          meesage: 'User having permission to access meeting'
+        };
+      }
+    }
+
+    return {
+      success: false,
+      meesage: 'User have not permission to access meeting'
+    }
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message || 'Internal Server Error');
+  }
+};
+
+const endTeamMeeting = async ({ userId, meetingId, duringTimes }) => {
   try {
     const meeting = await TeamMessage.findOne({
       _id: meetingId,
@@ -598,6 +626,7 @@ module.exports = {
   sendImageMessage,
   sendFileMessage,
   createTeamMeeting,
+  checkMeetingPermissionAccess,
   endTeamMeeting,
   deleteMessage
 };
