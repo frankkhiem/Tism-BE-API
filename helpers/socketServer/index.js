@@ -207,6 +207,19 @@ const createSocketServer = ({
       }
     });
 
+    // handle join team meeting
+    socket.on('join-team-meeting', (data) => {
+      console.log(data);
+      socket.join(data.meetingId);
+      socket.to(data.meetingId).emit('new-member-connected', data);
+    });
+
+    // handle leave team meeting
+    socket.on('leave-team-meeting', (data) => {
+      console.log(data);
+    });
+
+
     // change user status to 'offline' when all socket for userId disconnected
     socket.on('disconnect', async () => {
       try {
@@ -215,6 +228,7 @@ const createSocketServer = ({
         const isDisconnected = countSockets.size === 0;
         if( isDisconnected ) {
           // update the user status
+          const user = await User.findById(socket.userId);
           user.status = 'offline';
           await user.save();
 
