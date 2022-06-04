@@ -110,11 +110,22 @@ const uploadAvatar = async ({ userId, avatar }) => {
   }
 };
 
+const getAllUser = async ({}) => {
+  try {
+    const user = await User.find({});
+
+    return user;
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
 module.exports = {
   getProfile,
   getUserStatus,
   updateStatus,
   updateAvatar,
   updateDescription,
-  uploadAvatar
+  uploadAvatar,
+  getAllUser
 };
