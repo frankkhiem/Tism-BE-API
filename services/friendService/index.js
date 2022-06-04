@@ -294,7 +294,11 @@ const sendInvitationFriend = async ({ userId, personId }) => {
           inviter: user._id,
           invitee: invitee._id
         });
-
+        // send realtime notification to invitee
+        io.to(invitee.id).emit('new-invitation-friend', {
+          inviter: user.fullname,
+          inviterAvatar: user.avatar,
+        });
         return {
           success: true,
           message: `Send invitation friend to ${invitee.email} successfully`
@@ -362,7 +366,11 @@ const acceptInvitationFriend = async ({ userId, personId }) => {
         inviter.friends.push(user._id);
         await user.save();
         await inviter.save();
-
+        // send realtime notification to inviter
+        io.to(inviter.id).emit('new-friend', {
+          newFriend: user.fullname,
+          newFriendAvatar: user.avatar,
+        });
         return {
           success: true,
           message: `Accept invitation friend from ${inviter.email} successfully`
