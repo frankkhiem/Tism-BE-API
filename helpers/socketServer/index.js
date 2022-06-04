@@ -209,14 +209,14 @@ const createSocketServer = ({
 
     // handle join team meeting
     socket.on('join-team-meeting', (data) => {
-      console.log(data);
+      // console.log(data);
       socket.join(data.meetingId);
       socket.to(data.meetingId).emit('new-member-connected', data);
     });
 
     // handle leave team meeting
     socket.on('leave-team-meeting', (data) => {
-      console.log(data);
+      // console.log(data);
     });
 
 
