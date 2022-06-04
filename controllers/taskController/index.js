@@ -91,6 +91,7 @@ const updateTask = async(req, res) => {
         const endTime = req.body.endTime;
         const description = req.body.description;
         const executor = req.body.executor;
+
         const result = await taskService.updateTask({ userId, taskId, taskName, taskType, startTime, endTime, description, executor });
 
         res.status(200).json(result);
@@ -99,6 +100,22 @@ const updateTask = async(req, res) => {
         res.json(error);
     }
 };
+
+//update taskType
+const updateTaskType = async(req, res) => {
+    try {
+        const userId = req.userId;
+        const taskId = req.body.taskId;
+        const taskType = req.body.taskType;
+        const result = await taskService.updateTaskType({ taskId, userId, taskType });
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.status || 400);
+        res.json(error);
+    }
+};
+
 //remove task
 const removeTask = async(req, res) => {
     try {
@@ -124,4 +141,5 @@ module.exports = {
     getAllTasks,
     removeTask,
     updateTask,
+    updateTaskType
 };

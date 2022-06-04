@@ -106,6 +106,25 @@ const updateTask = async({ userId, taskId, taskName, taskType, startTime, endTim
     }
 };
 
+//update team's detail
+const updateTaskType = async({ taskId, userId, taskType }) => {
+    try {
+        let task = await Task.findById(taskId);
+        //console.log(task.assign, userId)
+        if (task.assign.toString() != userId.toString()) return "not have permission"
+
+        task.type = taskType;
+
+        await task.save();
+        return {
+            success: true,
+            message: 'Updated task successfully'
+        };
+    } catch (error) {
+        throw createError(error.statusCode || 500, error.message);
+    }
+};
+
 //remove team
 const removeTask = async({ taskId, userId }) => {
         try {
@@ -142,4 +161,5 @@ module.exports = {
     getAllTasks,
     updateTask,
     removeTask,
+    updateTaskType
 };
