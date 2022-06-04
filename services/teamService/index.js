@@ -186,13 +186,25 @@ const removeTeam = async ({ teamId, userId }) => {
 
 //add member to team
 const inviteMember = async ({ teamId, inviterId, inviteeId }) => {
-  const team_request = new teamRequest({
-    team: teamId,
-    inviter: inviterId,
-    invitee: inviteeId,
-    accept: ""
-  })
-  await team_request.save()
+  try {
+    const team_request = new teamRequest({
+      team: teamId,
+      inviter: inviterId,
+      invitee: inviteeId,
+      accept: ""
+    })
+    await team_request.save();
+    const inviter = await User.findById(inviterId);
+    const team = await Team.findById(teamId);
+    // send realtime notification to invitee
+    io.to(inviteeId).emit('new-invitation-team', {
+      inviter: inviter.fullname,
+      inviterAvatar: inviter.avatar,
+      teamName: team.teamName
+    });
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
   //console.log('invitation added')
 }
 
@@ -294,7 +306,7 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
     for (let i = 0; i < inviteeArray.length; i++) {
       if (!(team.member.includes(inviteeArray[i]) || (team.invites.includes(inviteeArray[i])))) {
         team.invites.push(inviteeArray[i])
-        await inviteMember({ teamId, inviter: userId, inviteeId: inviteeArray[i] })
+        await inviteMember({ teamId, inviterId: userId, inviteeId: inviteeArray[i] })
         //await Notification.create({ title: team.name, content: "no msg", owner: userId, type_of_notification: { type: "Team Invite", teamId: teamId } })
       }
       else{
