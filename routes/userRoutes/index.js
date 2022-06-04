@@ -18,6 +18,9 @@ router.use(authMiddleware.checkAuth);
 // API get user profile
 router.get('/profile', userController.getProfile);
 
+// API get user profile
+router.get('/allUser', userController.getAllUser);
+
 // API get user status
 router.get('/status', userController.getUserStatus);
 

@@ -4,20 +4,25 @@ const { translateAliases } = require("../../models/User");
 const Team = require('../../models/Team');
 const User = require('../../models/User');
 const teamRequest = require('../../models/Team/team_request');
+//const Notification = require('../../models/notification');
 const TeamMessage = require('../../models/Team/team.message');
 const Notification = require('../../models/notification');
 const fs = require('fs');
 const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
 const getAllTeam = async ({ user }) => {
-  var allTeam = new Array();
-  const teams = await Team.find({});
-  teams.map(team => {
-    if (team.member.includes(user._id)) {
-      allTeam.push({ teamName: team.teamName, teamId: team._id, type: team.type, avatar: team.avatar })
-    }
-  })
-  return allTeam;
+  try {
+    let allTeam = new Array();
+    const teams = await Team.find({});
+    teams.map(team => {
+      if (team.member.includes(user._id)) {
+        allTeam.push({ teamName: team.teamName, teamId: team._id, type: team.type, avatar: team.avatar })
+      }
+    })
+    return allTeam;
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
 }
 
 ////
@@ -53,15 +58,25 @@ const _getTeamAdmin = async (team) => {
 };
 
 //get team's detail
-const getTeam = async ({ teamId }) => {
+const getTeam = async ({ teamId, userId }) => {
   try {
     const team = await Team.findById(teamId);
+    if(!team.member.includes(userId.toString())) return {success: "false"}
     return await _getTeamAdmin(team);
   } catch (error) {
     throw createError(error.statusCode || 500, error.message);
   }
 };
 
+// //get all member of team
+// const getAllMembersOfTeam = async ({ teamId }) => {
+//   try {
+//     const team = await Team.findById(teamId);
+//     return {members: team.member};
+//   } catch (error) {
+//     throw createError(error.statusCode || 500, error.message);
+//   }
+// };
 const getTeamMembersInfo = async ({ teamId }) => {
   try {
     const team = await Team.findById(teamId);
@@ -175,7 +190,7 @@ const inviteMember = async ({ teamId, inviterId, inviteeId }) => {
     team: teamId,
     inviter: inviterId,
     invitee: inviteeId,
-    accept: "false"
+    accept: ""
   })
   await team_request.save()
   //console.log('invitation added')
@@ -192,9 +207,15 @@ const inviteMember = async ({ teamId, inviterId, inviteeId }) => {
 // get all team's request for an user
 const getAllInvite = async ({ userId }) => {
   try {
-    const allInvite = await teamRequest.find({ 'invitee': userId, 'accept': 'false' })
+    const allInvite = await teamRequest.find({ 'invitee': userId, 'accept': '' })
     //console.log(inviteArray.length)
-    return allInvite
+    let inviteArray = new Array()
+    for(let i=0; i < allInvite.length; i++){
+      let team = await Team.findById(allInvite[i].team)
+      let user = await User.findById(team.admin)
+      inviteArray.push({inviteId: allInvite[i]._id, teamId: allInvite[i].team, accept:allInvite[i].accept ,teamName: team.teamName, adminName: user.fullname, created_date:allInvite[i].createdAt})
+    }
+    return inviteArray
   }
   catch (error) {
     throw createError(error.statusCode || 500, error.message);
@@ -205,10 +226,22 @@ const getAllInvite = async ({ userId }) => {
 const responseForInvite = async ({ userId, inviteId, accept }) => {
   try {
     const invite = await teamRequest.findById(inviteId)
-    //console.log(invite)
+
+    if (invite.invitee.toString() != userId.toString()) return "not have permission"
+
     invite.accept = accept
-    if (invite.accept == 'true') await ToMember({ teamId: invite.team, userId })
     await invite.save()
+    if (invite.accept != '') {
+      if(accept == 'true')
+        await ToMember({ teamId: invite.team, userId })// them vao member khi dong y vao team
+      const team = await Team.findById(invite.team)
+      let index = team.invites.indexOf(userId.toString())
+      if(index > -1) {
+        team.invites.splice(index, 1)// xoa user khoi invite khi ho dong y
+        await team.save()
+      }
+    }
+
     return {
       success: true,
       message: 'response is success'
@@ -223,8 +256,7 @@ const responseForInvite = async ({ userId, inviteId, accept }) => {
 const ToMember = async ({ teamId, userId }) => {
   try {
     const team = await Team.findById(teamId)
-    //console.log(team.member)
-    team.member.push(userId)
+    if(!team.member.includes(userId)) team.member.push(userId)
     await team.save()
   }
   catch (error) {
@@ -235,10 +267,15 @@ const ToMember = async ({ teamId, userId }) => {
 // add more invite from team's admin
 const addMoreInvite = async ({ teamId, userId, inviteeArray }) => {
   try {
-    if (!await isAdmin({ teamId, userId })) return { status: 'not have permission' }
-    const _invites = await transformInvite({ inviteeArray })
-    await inviteToAnyOne({ teamId, userId, inviteeArray: _invites })
     const team = await Team.findById(teamId)
+    if (!await isAdmin({ teamId, userId })) return { status: 'not have permission' }
+
+    const _invites = await transformInvite({ inviteeArray })
+
+    if(team.invites.includes(_invites[0]) || team.member.includes(_invites[0])) return "already in member or invites"
+    
+    await inviteToAnyOne({ teamId, userId, inviteeArray: _invites })
+
     return {
       success: true,
       message: 'Invite is sent'
@@ -253,12 +290,15 @@ const inviteToAnyOne = async ({ teamId, userId, inviteeArray }) => {
   try {
     if (inviteeArray === null) return
     const team = await Team.findById(teamId)
-    if (team.admin != userId) return "no permission"
+    if (team.admin != userId) return "no have permission"
     for (let i = 0; i < inviteeArray.length; i++) {
       if (!(team.member.includes(inviteeArray[i]) || (team.invites.includes(inviteeArray[i])))) {
         team.invites.push(inviteeArray[i])
-        await inviteMember({ teamId, userId, inviteeId: inviteeArray[i] })
+        await inviteMember({ teamId, inviter: userId, inviteeId: inviteeArray[i] })
         //await Notification.create({ title: team.name, content: "no msg", owner: userId, type_of_notification: { type: "Team Invite", teamId: teamId } })
+      }
+      else{
+        return "user already exist in team"
       }
     }
     const newTeam = team.save()
@@ -611,6 +651,7 @@ const deleteMessage = async ({ userId, teamId, messageId }) => {
 module.exports = {
   _getTeam,
   getTeam,
+  //getAllMembersOfTeam,
   getTeamMembersInfo,
   createTeam,
   getAllTeam,

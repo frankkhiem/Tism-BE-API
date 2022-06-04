@@ -20,8 +20,9 @@ const getAllTeam = async (req, res) => {
 const getTeam = async (req, res) => {
   try {
     const teamId = req.params.id;
+    const userId = req.userId;
     const result = await teamService.getTeam({
-      teamId
+      teamId, userId
     });
 
     res.status(200).json(result);
@@ -30,6 +31,14 @@ const getTeam = async (req, res) => {
     res.json(error);
   }
 };
+//[GET] get all member from team
+// const getAllMembersOfTeam = async (req, res) => {
+//   try {
+//     const teamId = req.params.id;
+//     const userId = req.userId;
+//     const result = await teamService.getAllMembersOfTeam({
+//       teamId, userId
+//     });
 
 // [GET] /team/:teamId/members
 const getTeamMembersInfo = async (req, res) => {
@@ -46,6 +55,12 @@ const getTeamMembersInfo = async (req, res) => {
 
 //[POST] create new invite to friend
 
+//     res.status(200).json(result);
+//   } catch (error) {
+//     res.status(error.status || 400);
+//     res.json(error);
+//   }
+// };
 //[POST] create new team 
 const createTeam = async (req, res) => {
   try {
@@ -153,6 +168,7 @@ const addMoreInvite = async (req, res) => {
     const userId = req.userId
     const teamId = req.body.teamId
     const inviteArray = req.body.inviteArray
+    if(inviteArray.length == 0) return "array is null"
     const result = await teamService.addMoreInvite({
       teamId,
       userId,
@@ -321,6 +337,7 @@ const deleteMessage = async (req, res) => {
 
 module.exports = {
   getTeam,
+  //getAllMembersOfTeam,
   getTeamMembersInfo,
   createTeam,
   getAllTeam,

@@ -19,6 +19,25 @@ const getAllTasks = async ({ team, userId }) => {
 }
 
 //get team's detail
+const getMyTasks = async ({ userId }) => {
+    try {
+        let myTasks = new Array();
+        const tasks = await Task.find({});
+        tasks.map(task => {
+            for(let i=0; i < task.executor.length; i++)
+            {
+                if (task.executor[i].equals(userId)) {
+                    myTasks.push(task);
+                }
+            }
+        })
+        return myTasks;
+    } catch (error) {
+        throw createError(error.statusCode || 500, error.message);
+    }
+};
+
+//get team's detail
 const getTask = async({ taskId }) => {
     try {
         const task = await Task.findById(taskId);
@@ -117,6 +136,7 @@ const transformExecutorArray = async ({ executorArray }) => {
 
 module.exports = {
     getTask,
+    getMyTasks,
     createTask,
     getAllTasks,
     updateTask,

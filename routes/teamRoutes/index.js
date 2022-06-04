@@ -19,6 +19,8 @@ router.use(authMiddleware.checkAuth);
 
 //[GET] get team's detail
 router.get('/getteam/:id', teamController.getTeam);
+//[GET] get all members from team
+// router.get('/getallmembers/:id', teamController.getAllMembersOfTeam);
 
 //[GET] get team members information
 router.get('/:teamId/members', teamController.getTeamMembersInfo);

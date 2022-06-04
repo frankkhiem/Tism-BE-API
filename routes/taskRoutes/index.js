@@ -7,6 +7,8 @@ router.use(authMiddleware.checkAuth);
 
 //[GET] get task's detail
 router.get('/gettask/:taskid', taskController.getTask);
+//[GET] get all my tasks
+router.get('/getmytasks', taskController.getMyTasks);
 //[POST] create task 
 router.post('/createtask', taskController.createTask);
 //[GET] get user's all task

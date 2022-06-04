@@ -106,6 +106,17 @@ const editUserDescription = async (req, res) => {
   }
 };
 
+const getAllUser = async (req, res) => {
+  try {
+    const result = await userService.getAllUser({});
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
+
 module.exports = {
   getProfile,
   getUserStatus,
@@ -113,5 +124,6 @@ module.exports = {
   editUserStatus,
   editUserAvatar,
   uploadUserAvatar,
-  editUserDescription
+  editUserDescription,
+  getAllUser,
 };
