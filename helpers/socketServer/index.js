@@ -217,6 +217,7 @@ const createSocketServer = ({
     // handle leave team meeting
     socket.on('leave-team-meeting', (data) => {
       // console.log(data);
+      // handle when team's member leave team meeting
     });
 
 
