@@ -7,6 +7,8 @@ router.use(authMiddleware.checkAuth);
 
 //[GET] get task's detail
 router.get('/gettask/:taskid', taskController.getTask);
+//[GET] get all my tasks
+router.get('/getmytasks', taskController.getMyTasks);
 //[POST] create task 
 router.post('/createtask', taskController.createTask);
 //[GET] get user's all task
@@ -15,4 +17,6 @@ router.get('/getalltasks/:teamid', taskController.getAllTasks);
 router.delete('/:taskId/removetask', taskController.removeTask);
 //[PUT] update task's detail
 router.put('/updatetask', taskController.updateTask);
+//[PUT] update task's status
+router.put('/updatetasktype', taskController.updateTaskType);
 module.exports = router;
