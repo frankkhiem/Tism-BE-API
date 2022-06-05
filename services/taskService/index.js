@@ -6,8 +6,8 @@ const Team = require("../../models/Team");
 const User = require('../../models/User');
 
 
-const getAllTasks = async ({ team, userId }) => {
-    if(!team.member.includes(userId.toString())) return "not have permission";
+const getAllTasks = async({ team, userId }) => {
+    if (!team.member.includes(userId.toString())) return "not have permission";
     var allTasks = new Array();
     const tasks = await Task.find({});
     tasks.map(task => {
@@ -19,13 +19,12 @@ const getAllTasks = async ({ team, userId }) => {
 }
 
 //get team's detail
-const getMyTasks = async ({ userId }) => {
+const getMyTasks = async({ userId }) => {
     try {
         let myTasks = new Array();
         const tasks = await Task.find({});
         tasks.map(task => {
-            for(let i=0; i < task.executor.length; i++)
-            {
+            for (let i = 0; i < task.executor.length; i++) {
                 if (task.executor[i].equals(userId)) {
                     myTasks.push(task);
                 }
@@ -55,14 +54,15 @@ const createTask = async({
     taskType,
     startTime,
     endTime,
+    description,
     executorArray
 }) => {
     try {
         const team = await Team.findById(teamId)
-        const executorIdArray = await transformExecutorArray({executorArray})
+        const executorIdArray = await transformExecutorArray({ executorArray })
 
         assigner = userId.toString();
-        if(!team.member.includes(assigner)) return "not have permission"
+        if (!team.member.includes(assigner)) return "not have permission"
         const newTask = new Task({
             assign: assigner,
             team: teamId,
@@ -70,6 +70,7 @@ const createTask = async({
             type: taskType,
             start_time: startTime,
             end_time: endTime,
+            description: description,
             executor: executorIdArray
         });
         const task = await newTask.save();
@@ -81,18 +82,38 @@ const createTask = async({
 };
 
 //update team's detail
-const updateTask = async ({ userId, taskId, taskName, taskType, startTime, endTime, executor }) => {
-    try {   
+const updateTask = async({ userId, taskId, taskName, taskType, startTime, endTime, description, executor }) => {
+    try {
         let task = await Task.findById(taskId);
         //console.log(task.assign, userId)
-        if(task.assign.toString() != userId.toString()) return "not have permission"
+        if (task.assign.toString() != userId.toString()) return "not have permission"
 
-        const executorIdArray = await transformExecutorArray({executorArray:executor})
+        const executorIdArray = await transformExecutorArray({ executorArray: executor })
         task.name = taskName;
         task.type = taskType;
         task.start_time = startTime;
         task.end_time = endTime;
+        task.description = description;
         task.executor = executorIdArray;
+
+        await task.save();
+        return {
+            success: true,
+            message: 'Updated task successfully'
+        };
+    } catch (error) {
+        throw createError(error.statusCode || 500, error.message);
+    }
+};
+
+//update team's detail
+const updateTaskType = async({ taskId, userId, taskType }) => {
+    try {
+        let task = await Task.findById(taskId);
+        //console.log(task.assign, userId)
+        if (task.assign.toString() != userId.toString()) return "not have permission"
+
+        task.type = taskType;
 
         await task.save();
         return {
@@ -106,30 +127,29 @@ const updateTask = async ({ userId, taskId, taskName, taskType, startTime, endTi
 
 //remove team
 const removeTask = async({ taskId, userId }) => {
-    try {
-        let task = await Task.findById(taskId);
-        if(userId.toString() != task.assign.toString()) return "not have permission"
-        await Task.findByIdAndRemove(taskId)
-        return {
-            success: true,
-            message: 'Removed task successfully'
-        };
-    } catch (error) {
-        throw createError(error.statusCode || 500, error.message);
+        try {
+            let task = await Task.findById(taskId);
+            if (userId.toString() != task.assign.toString()) return "not have permission"
+            await Task.findByIdAndRemove(taskId)
+            return {
+                success: true,
+                message: 'Removed task successfully'
+            };
+        } catch (error) {
+            throw createError(error.statusCode || 500, error.message);
+        }
     }
-}
-//transform executor email to executorId
-const transformExecutorArray = async ({ executorArray }) => {
+    //transform executor email to executorId
+const transformExecutorArray = async({ executorArray }) => {
     try {
         if (executorArray === null) return
         let temp = new Array()
         for (let i = 0; i < executorArray.length; i++) {
-            var user = await User.findOne({ 'email': executorArray[i] })
+            var user = await User.findById(executorArray[i])
             temp.push(user.id)
         }
         return temp
-    }
-    catch (error) {
+    } catch (error) {
         throw createError(error.statusCode || 500, error.message);
     }
 }
@@ -141,4 +161,5 @@ module.exports = {
     getAllTasks,
     updateTask,
     removeTask,
+    updateTaskType
 };

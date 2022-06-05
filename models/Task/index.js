@@ -52,7 +52,10 @@ const taskSchema = new Schema({
         }
     }],
 
-    description: String,
+    description: {
+        type: String,
+        required: false
+    },
 }, {
     collection: 'tasks',
     timestamps: true

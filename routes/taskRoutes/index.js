@@ -17,4 +17,6 @@ router.get('/getalltasks/:teamid', taskController.getAllTasks);
 router.delete('/:taskId/removetask', taskController.removeTask);
 //[PUT] update task's detail
 router.put('/updatetask', taskController.updateTask);
+//[PUT] update task's status
+router.put('/updatetasktype', taskController.updateTaskType);
 module.exports = router;
