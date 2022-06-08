@@ -38,6 +38,23 @@ const getUserStatus = async ({ userId }) => {
   }
 };
 
+const updateFullname = async ({ userId, fullname }) => {
+  try {
+    const user = await User.findById(userId);
+
+    user.fullname = fullname;
+
+    await user.save();
+
+    return {
+      success: true,
+      message: 'Update user fullname successfully'
+    };
+  } catch (error) {
+    throw createError(error.statusCode || 500, error.message);
+  }
+};
+
 const updateStatus = async ({ userId, status }) => {
   try {
     const user = await User.findById(userId);
@@ -123,6 +140,7 @@ const getAllUser = async ({}) => {
 module.exports = {
   getProfile,
   getUserStatus,
+  updateFullname,
   updateStatus,
   updateAvatar,
   updateDescription,

@@ -85,12 +85,12 @@ const register = async ({
     newUser.accessToken = accessToken;
     newUser.refreshToken = refreshToken;
 
-    const userContacts = await axios.post(`${process.env.ZATO_MODULE_SERVER}/user-contacts`, {
-      userId: newUser._id
-    });
+    // const userContacts = await axios.post(`${process.env.ZATO_MODULE_SERVER}/user-contacts`, {
+    //   userId: newUser._id
+    // });
 
-    if( userContacts.data.success ) await newUser.save();
-    // await newUser.save();
+    // if( userContacts.data.success ) await newUser.save();
+    await newUser.save();
 
     return {
       user: _getBasicDetailUser(newUser),

@@ -30,6 +30,9 @@ router.get('/:personId/status', userController.getPersonStatus);
 // API edit user status
 router.patch('/status', userController.editUserStatus);
 
+// API edit user fullname
+router.patch('/fullname', userController.editUserFullname);
+
 // API edit user avatar
 router.patch('/avatar', userValidations.editUserAvatar, userController.editUserAvatar);
 

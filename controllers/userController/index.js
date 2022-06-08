@@ -58,6 +58,21 @@ const editUserStatus = async (req, res) => {
   }
 };
 
+// [PATCH] /user/fullname
+const editUserFullname = async (req, res) => {
+  try {
+    const { fullname } = req.body;
+
+    const userId = req.userId;
+
+    const result = await userService.updateFullname({ userId, fullname });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.status || 400);
+    res.json(error);
+  }
+};
 
 // [PATCH] /user/avatar
 const editUserAvatar = async (req, res) => {
@@ -122,6 +137,7 @@ module.exports = {
   getUserStatus,
   getPersonStatus,
   editUserStatus,
+  editUserFullname,
   editUserAvatar,
   uploadUserAvatar,
   editUserDescription,
