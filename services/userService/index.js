@@ -2,6 +2,7 @@ const createError = require("http-errors");
 
 const User = require('../../models/User');
 const fs = require('fs');
+const convertVie = require('../../helpers/convertVie');
 const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
 const _getBasicDetailUser = (user) => {
@@ -42,7 +43,9 @@ const updateFullname = async ({ userId, fullname }) => {
   try {
     const user = await User.findById(userId);
 
+    fullname = fullname.trim();
     user.fullname = fullname;
+    user.normalizeName = convertVie(fullname);
 
     await user.save();
 
