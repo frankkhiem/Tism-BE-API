@@ -4,9 +4,8 @@ const { translateAliases } = require("../../models/User");
 const Team = require('../../models/Team');
 const User = require('../../models/User');
 const teamRequest = require('../../models/Team/team_request');
-//const Notification = require('../../models/notification');
+//const Notification = require('../../models/Notification');
 const TeamMessage = require('../../models/Team/team.message');
-const Notification = require('../../models/notification');
 const fs = require('fs');
 const { uploadToFirebase } = require('../../helpers/firebase/storage');
 
