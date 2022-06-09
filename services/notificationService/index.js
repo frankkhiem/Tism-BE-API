@@ -2,7 +2,7 @@ const createError = require("http-errors");
 const { translateAliases } = require("../../models/User");
 
 const User = require('../../models/User');
-const Notification = require('../../models/notification');
+const Notification = require('../../models/Notification');
 
 // const getAllNotifications = async ({ userId }) => {
 //     const users = await User.find({userId});
