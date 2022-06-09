@@ -11,13 +11,13 @@ const { createPeerServer } = require('./helpers/peerServer');
 
 const app = express();
 const httpServer = createServer(app);
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Setup socket.io server
 global.io = createSocketServer({ httpServer });
 
 // Setup peerjs server
-createPeerServer();
+// createPeerServer();
 
 // Config .env
 dotenv.config();
